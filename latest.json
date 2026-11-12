@@ -1,0 +1,6 @@
+{
+  "version": "2.1.1",
+  "name": "Infinity Timetable 2.1.1",
+  "setup": "InfinityTimetable-Setup-2.1.1.exe",
+  "notes": "What's new in 2.1.1\n- Learners list opens read-only, with an Edit pop-up and wider names\n- Printing the whole school can be limited to one section\n- Department reports have Preview and export (PDF, Excel, Word, image)\n- Automatic updates are switched on\n\nUpdating keeps all your timetables, settings and your licence."
+}
