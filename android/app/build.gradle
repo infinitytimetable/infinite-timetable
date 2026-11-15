@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Version comes from version.txt (kept in step with the timetable app), e.g. 2.3.0 -> versionCode 20300
+def appVersion = file('../version.txt').text.trim()
+def parts = appVersion.tokenize('.').collect { it as int }
+def code = parts[0] * 10000 + parts[1] * 100 + (parts.size() > 2 ? parts[2] : 0)
+
+android {
+    namespace 'com.infinitytimetable.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.infinitytimetable.app'
+        minSdk 24
+        targetSdk 34
+        versionCode code
+        versionName appVersion
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv('IT_KEYSTORE') ?: 'missing.jks')
+            storePassword System.getenv('IT_KEY_PASSWORD') ?: ''
+            keyAlias 'infinity'
+            keyPassword System.getenv('IT_KEY_PASSWORD') ?: ''
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.core:core:1.13.1'
+}
