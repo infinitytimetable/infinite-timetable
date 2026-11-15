@@ -33,11 +33,12 @@ jobs:
           IT_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           if [ -z "$IT_KEY_PASSWORD" ]; then
-            echo "::error::The ANDROID_KEY_PASSWORD secret is not set in Settings > Secrets and variables > Actions"
-            echo "MISSING_SECRET" > build.log
-            exit 1
+            echo "::warning::ANDROID_KEY_PASSWORD is not set yet: building an unsigned test copy only (not published)"
+            echo "HAVE_KEY=0" >> "$GITHUB_ENV"
+          else
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in android/keystore.enc -out "$RUNNER_TEMP/release.jks" -pass env:IT_KEY_PASSWORD
+            echo "HAVE_KEY=1" >> "$GITHUB_ENV"
           fi
-          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in android/keystore.enc -out "$RUNNER_TEMP/release.jks" -pass env:IT_KEY_PASSWORD
 
       - name: Build the APK
         env:
@@ -45,9 +46,11 @@ jobs:
         run: |
           export IT_KEYSTORE="$RUNNER_TEMP/release.jks"
           set -o pipefail
-          gradle -p android assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+          if [ "$HAVE_KEY" = "1" ]; then TASK=assembleRelease; else TASK=assembleDebug; fi
+          gradle -p android $TASK --no-daemon --stacktrace 2>&1 | tee build.log
 
       - name: Name the APK
+        if: env.HAVE_KEY == '1'
         run: |
           V=$(tr -d '[:space:]' < android/version.txt)
           cp android/app/build/outputs/apk/release/app-release.apk InfinityTimetable.apk
@@ -55,6 +58,7 @@ jobs:
           echo "V=$V" >> "$GITHUB_ENV"
 
       - name: Publish the download
+        if: env.HAVE_KEY == '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -79,6 +83,8 @@ jobs:
           git config user.email "infinitytimetable@users.noreply.github.com"
           {
             echo "status: ${{ job.status }}"
+            echo "signed: ${HAVE_KEY:-0}"
+            ls -la "$GITHUB_WORKSPACE"/android/app/build/outputs/apk/*/ 2>/dev/null | sed 's/^/apk: /' 
             echo "version: ${V:-unknown}"
             echo "commit: $GITHUB_SHA"
             echo "time: $(date -u)"
