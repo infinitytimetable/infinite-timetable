@@ -6084,6 +6084,7 @@ var mutate_bay=mutate;mutate=function(fn){return mutate_bay(function(){fn();bayP
   /* files: hand them to Android, which offers Save to phone or Share */
   downloadBlob=function(name,blob){var rd=new FileReader();rd.onload=function(){var s=String(rd.result),b64=s.slice(s.indexOf(',')+1);
     try{A.saveFile(name,blob.type||'application/octet-stream',b64);}catch(e){toast('Could not save the file: '+e.message);}};rd.readAsDataURL(blob);};
+  download=function(name,text,type){downloadBlob(name,new Blob([text],{type:type||'application/octet-stream'}));};
   /* printing goes through Android's print service (printers and Save as PDF) */
   window.print=function(){try{A.print(document.title||'Infinity Timetable');}catch(e){toast('Printing is not available on this device');}};
   /* outside links (WhatsApp, the update page) open in the right app */
