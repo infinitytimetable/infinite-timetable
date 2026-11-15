@@ -1,0 +1,10 @@
+status: success
+signed: 0
+apk: total 2444
+apk: drwxr-xr-x 2 runner runner    4096 Nov 15 21:49 .
+apk: drwxr-xr-x 3 runner runner    4096 Nov 15 21:49 ..
+apk: -rw-r--r-- 1 runner runner 2486282 Nov 15 21:49 app-debug.apk
+apk: -rw-r--r-- 1 runner runner     413 Nov 15 21:49 output-metadata.json
+version: unknown
+commit: 6ed7af305bc3866436d86be607ef899744496017
+time: Sun Nov 15 21:49:12 UTC 2026
