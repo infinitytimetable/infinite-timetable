@@ -597,6 +597,11 @@ dialog.xl{width:min(96vw,980px)}
 #carry.micro .mpc.multi .fl{display:none}#carry.micro .mpc.multi .shc{display:inline}
 #carry:not(.micro) .mpc.multi b{white-space:normal;overflow-wrap:anywhere;line-height:1.15}
 
+/* v2.4 Windows program extras */
+.dkpair{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.dkqr{background:#fff;padding:10px;border-radius:12px;border:1px solid var(--line,#d6dbe6);width:200px;height:200px}.dkqr svg{width:100%;height:100%}
+.dkbig{display:flex;flex-direction:column;margin:8px 0}.dkbig span{font-size:12px;color:var(--muted,#6b7590)}.dkbig b{font-size:26px;letter-spacing:.06em;font-family:ui-monospace,Consolas,monospace}
+
 /* v2.2 ID cards: real size is 85.6 x 54 mm = 324 x 204 px at 96 dpi.
    Every design keeps the code in its own zone: a QR code gets a column on the right,
    a barcode gets a strip along the bottom. Details shrink a little (idcFit) when crowded. */
@@ -717,6 +722,127 @@ dialog.xl{width:min(96vw,980px)}
 .idpg.one{display:block}.idpg.one .idc{border-radius:0}
 .d-simple .ihead{padding:7px 12px 0;margin:0}.d-simple .ibody{padding-top:6px}
 .d-simple.has-bar .iph{width:62px;height:78px}.d-simple.has-bar .ihead{padding-top:5px}.d-simple.has-bar .ibrow{padding:2px 12px 4px}.d-simple.has-bar .icode.bar.strip{height:22px}
+
+/* ===== v2.4: phone layout ===== */
+#phbar,#phnav,#phhold{display:none}
+body.phone .top,body.phone .side,body.phone #bay,body.phone .mtools{display:none!important}
+body.phone .shell{display:block}
+body.phone #main{padding:10px 10px calc(76px + env(safe-area-inset-bottom));min-width:0}
+body.phone.ph-holding #main{padding-bottom:calc(140px + env(safe-area-inset-bottom))}
+body.phone .btn{min-height:40px;padding:8px 12px;font-size:14px}
+body.phone .btn.sm{min-height:36px;padding:6px 10px;font-size:13px}
+body.phone .in{min-height:42px;font-size:16px}
+body.phone .pagehead.slim{margin:4px 2px 10px}
+body.phone .pagehead.slim h1{font-size:1.35rem;margin:0}
+body.phone .pagehead.slim .lead{margin:2px 0 0;font-size:13px;color:var(--muted)}
+body.phone .card{padding:14px;margin:0 0 10px}
+body.phone .card h2{font-size:1.02rem;margin:0 0 8px;display:flex;gap:6px;align-items:center}
+body.phone table{font-size:13px}
+body.phone .tablewrap,body.phone .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* top bar */
+body.phone #phbar{display:flex;position:sticky;top:0;z-index:30;align-items:center;gap:4px;padding:6px 6px 6px 12px;padding-top:calc(6px + env(safe-area-inset-top));background:var(--surface);border-bottom:1px solid var(--line);min-height:52px}
+.phbrand{flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:4px 0;color:var(--fg)}
+.phbrand b{display:block;font-family:var(--font-d);font-size:1rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phbrand span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#phbar .btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+/* bottom menu */
+body.phone #phnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+#phnav button{flex:1;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 6px;min-height:58px;font-size:11px}
+#phnav button[aria-current="page"]{color:var(--accent);font-weight:600}
+#phnav button[aria-current="page"] svg{background:var(--accent-bg);border-radius:12px;padding:2px 10px;box-sizing:content-box}
+/* holding bar */
+body.phone.ph-holding #phhold{display:flex}
+#phhold{position:fixed;left:8px;right:8px;bottom:calc(66px + env(safe-area-inset-bottom));z-index:41;align-items:center;gap:8px;padding:8px 8px 8px 12px;border-radius:12px;background:var(--fg);color:var(--bg);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#phhold .phht{flex:1;min-width:0}
+#phhold .phht b,#phhold .phht small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#phhold .phht small{opacity:.75;font-size:12px}
+#phhold .btn{background:transparent;color:inherit;border-color:currentColor}
+/* bottom sheet */
+.phsheet{position:fixed;inset:0;z-index:60}
+.phsheet[hidden]{display:none}
+.phsb{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+.phsc{position:absolute;left:0;right:0;bottom:0;max-height:86vh;overflow:auto;background:var(--surface);border-radius:16px 16px 0 0;padding:6px 14px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.25);animation:phup .18s ease-out}
+@keyframes phup{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.phsc .grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 6px}
+.phsc h3{margin:0;font-size:1.05rem;font-family:var(--font-d)}
+.phsc h4{margin:14px 0 6px;font-size:13px;color:var(--muted);font-weight:600}
+.phsc .row.sp,.phsync .row.sp,.phnext .row.sp{justify-content:space-between;align-items:center}
+.phbody{padding-top:6px}
+body.phsheet-open{overflow:hidden}
+.phstick{position:sticky;bottom:-16px;background:var(--surface);padding:10px 0 4px;margin-top:10px;gap:8px;justify-content:flex-end}
+.btn.wide{width:100%;display:flex;justify-content:center;gap:8px;align-items:center}
+.ff{display:block;margin:10px 0}.ff span{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}.ff .in{width:100%;box-sizing:border-box}
+.phtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.phtile{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--fg);min-height:74px;text-align:center}
+.phlist{display:flex;flex-direction:column;margin-top:12px;border-top:1px solid var(--line)}
+.phlist button{display:flex;gap:12px;align-items:center;border:0;border-bottom:1px solid var(--line);background:transparent;padding:12px 4px;text-align:left;color:var(--fg);min-height:52px}
+.phlist button span small{display:block;color:var(--muted);font-size:12px}
+.phinfo{border-left:5px solid hsl(var(--h) 60% 50%);padding:6px 10px;margin:4px 0 10px;background:var(--surface-2);border-radius:4px;display:flex;flex-direction:column;gap:2px}
+.phinfo b{font-size:1.05rem}.phinfo .bad{color:var(--bad)}
+.phacts{display:flex;flex-wrap:wrap;gap:6px}
+.phbest{display:flex;flex-direction:column;gap:6px}
+.phbest button{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;text-align:left;color:var(--fg);min-height:52px}
+.phbest button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+.phbest small{display:block;color:var(--muted);font-size:12px}
+.stars{color:#e3a008;letter-spacing:1px;white-space:nowrap}.stars i{color:var(--line);font-style:normal}
+.phn{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+.phchecks{display:flex;flex-direction:column}
+.phcheck{display:flex;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);min-height:44px}
+.phcheck input{width:22px;height:22px}
+/* timetable: day view */
+.phseg{display:flex;width:100%;margin-bottom:8px}.phseg button{flex:1;min-height:40px;font-size:13px;padding:6px 4px}
+.phent{gap:8px;margin-bottom:8px;flex-wrap:nowrap}.phent select{flex:1;min-width:0}
+.phdays{display:flex;gap:4px;margin:0 0 10px;position:sticky;top:52px;z-index:5;background:var(--bg);padding:4px 0}
+.phdays button{flex:1;border:1px solid var(--line);background:var(--surface);border-radius:8px;min-height:42px;font-weight:600;color:var(--fg);position:relative}
+.phdays button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.phdays .dot{position:absolute;top:4px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.phrow{display:flex;gap:8px;margin-bottom:6px;align-items:stretch}
+.phtime{flex:none;width:58px;display:flex;flex-direction:column;justify-content:center;padding:2px 0}
+.phtime b{font-size:13px}.phtime small{font:11px var(--mono);color:var(--muted)}
+.phslot{flex:1;min-width:0;min-height:52px;display:flex;flex-direction:column;gap:4px;border:0;padding:0;background:transparent}
+.phcard{width:100%;text-align:left;border:1px solid hsl(var(--h) 45% 70%);border-left:5px solid hsl(var(--h) 60% 48%);background:hsl(var(--h) 70% 95%);color:#1a1a1a;border-radius:8px;padding:7px 10px;min-height:50px;display:flex;flex-direction:column;justify-content:center}
+.phcard b{font-size:14px;line-height:1.2}.phcard b em{font-style:normal;font-weight:500;font-size:11px;background:rgba(0,0,0,.08);padding:1px 5px;border-radius:3px;margin-left:4px}
+.phcard span{font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phcard small{font-size:11px;color:var(--bad)}
+.phcard.bad{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.phcard.cont{min-height:34px;opacity:.75;border-style:dashed}
+.phcard.lifted{opacity:.35;outline:2px dashed var(--accent)}
+.phempty,.phfree{width:100%;min-height:50px;border:1px dashed var(--line);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;display:flex;align-items:center;justify-content:center}
+.phlab{width:100%;min-height:44px;border-radius:8px;border:2px dashed;display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:13px;text-align:left;font-weight:600}
+.phlab.ok{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.phlab.swap{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}
+.phlab.bad{border-color:var(--line);background:var(--surface-2);color:var(--muted);font-weight:400}
+.phwhy{font-size:11px;color:var(--muted)}
+.phbrk{display:flex;gap:8px;align-items:center;margin:2px 0 8px;font-size:12px;color:var(--muted)}
+.phbrk span{flex:none;width:58px;font-weight:600}.phbrk:after{content:"";flex:1;height:1px;background:var(--line)}
+.phbrk small{order:2;font-family:var(--mono)}
+/* whole school: class strips */
+.phsrow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.phsname{flex:none;width:58px;font-size:12px}
+.phstrip{flex:1;display:flex;gap:3px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.phscl{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;background:transparent;padding:0}
+.phscl small{font-size:9px;color:var(--muted)}
+.phsgap{flex:none;width:4px}
+.phchip{min-width:44px;height:38px;border-radius:6px;border:1px solid hsl(var(--h) 45% 70%);background:hsl(var(--h) 70% 92%);color:#1a1a1a;font:600 11px var(--mono);padding:0 4px}
+.phchip.empty{border:1px dashed var(--line);background:transparent;color:var(--muted)}
+.phchip.ok{border:2px solid var(--ok);background:var(--ok-bg);color:var(--ok)}
+.phchip.swap{border:2px solid var(--accent);background:var(--accent-bg);color:var(--accent)}
+.phchip.bad{opacity:.5}
+/* my day and cover */
+.phnext h2{font-size:1.25rem!important;margin:6px 0 2px!important}.phnext h2 em{font-size:13px;font-style:normal;color:var(--muted)}
+.phnext p{margin:0 0 6px}
+.phmini{display:flex;gap:8px;align-items:baseline;padding:8px 0 8px 8px;border-bottom:1px solid var(--line);border-left:4px solid hsl(var(--h,210) 55% 55%);margin-bottom:2px;font-size:13px}
+.phmini span{font:11px var(--mono);color:var(--muted)}.phmini em{font-style:normal;color:var(--accent);font-size:12px}
+.phmini.now{background:var(--accent-bg)}
+.warnc{border-color:var(--warn)!important}
+.phcov{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px}
+.phcov.done{border-color:var(--ok)}
+.phcov small{display:block;color:var(--muted);font-size:12px}
+.phcov .row{flex-wrap:wrap;gap:6px}
+@media (min-width:761px){.phsheet .phsc{left:50%;right:auto;width:520px;transform:translateX(-50%);border-radius:16px;bottom:20px;animation:none}}
+.phtt{max-width:100%;min-width:0;overflow-x:hidden}
+.phsrow,.phday{min-width:0;max-width:100%}
+.phstrip{min-width:0}
 
 .cgwrap{max-height:62vh;overflow:auto}
 .cgrid{font-size:12px}.cgrid th{white-space:nowrap;position:sticky;left:0;background:var(--surface)}.cgrid thead th{position:sticky;top:0;z-index:2;background:var(--surface-2)}
@@ -3109,9 +3235,10 @@ function sampleDepts(d){
 function rowLockBtn(i){var l=rowPls(i,false);if(!l.length)return '';var all=l.every(function(p){return p.locked;});return '<button type="button" class="rl'+(all?' on':'')+'" data-act="b4-rowlock" data-i="'+i+'" title="'+(all?'Unlock':'Lock')+' this row" aria-label="'+(all?'Unlock':'Lock')+' this row">'+(all?ICON_LOCK:ICON_OPEN)+'</button>';}
 
 /* ---------- batch 6: PC software features ---------- */
-var APP_VERSION='2.3.0';
+var APP_VERSION='2.4.0';
 var ICON_V2='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjQ2IDUwIDQ0NCA0NDQiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0icGciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmZmZmYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNlNGU5ZjAiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0ic2lkZSIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2M1Y2NkOCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzlhYTViNiIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJoZCIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzNiNWJhOSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzE2MmE1NyIvPjwvbGluZWFyR3JhZGllbnQ+PGxpbmVhckdyYWRpZW50IGlkPSJyaW5nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMCI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNmI3MjgwIi8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzZjRmNiIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzZiNzI4MCIvPjwvbGluZWFyR3JhZGllbnQ+PHJhZGlhbEdyYWRpZW50IGlkPSJnb2xkIiBjeD0iLjM1IiBjeT0iLjMiIHI9Ii44Ij48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2Y2MiLz48c3RvcCBvZmZzZXQ9Ii4zNSIgc3RvcC1jb2xvcj0iI2ZmZTA4YSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2M4OTExYyIvPjwvcmFkaWFsR3JhZGllbnQ+PHJhZGlhbEdyYWRpZW50IGlkPSJzaGQiIGN4PSIuNSIgY3k9Ii41IiByPSIuNSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDAwIiBzdG9wLW9wYWNpdHk9Ii4zNSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwMCIgc3RvcC1vcGFjaXR5PSIwIi8+PC9yYWRpYWxHcmFkaWVudD48ZmlsdGVyIGlkPSJkcyIgeD0iLTIwJSIgeT0iLTIwJSIgd2lkdGg9IjE0MCUiIGhlaWdodD0iMTUwJSI+PGZlR2F1c3NpYW5CbHVyIGluPSJTb3VyY2VBbHBoYSIgc3RkRGV2aWF0aW9uPSI4Ii8+PGZlT2Zmc2V0IGR4PSI0IiBkeT0iMTAiLz48ZmVDb21wb25lbnRUcmFuc2Zlcj48ZmVGdW5jQSB0eXBlPSJsaW5lYXIiIHNsb3BlPSIuMzUiLz48L2ZlQ29tcG9uZW50VHJhbnNmZXI+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlLz48ZmVNZXJnZU5vZGUgaW49IlNvdXJjZUdyYXBoaWMiLz48L2ZlTWVyZ2U+PC9maWx0ZXI+PC9kZWZzPjxlbGxpcHNlIGN4PSIyNTAiIGN5PSI0NjIiIHJ4PSIyMDAiIHJ5PSIyNiIgZmlsbD0idXJsKCNzaGQpIi8+PGcgZmlsdGVyPSJ1cmwoI2RzKSI+PHJlY3QgeD0iNzYiIHk9IjExOCIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDYiIHJ4PSI0MCIgZmlsbD0idXJsKCNzaWRlKSIvPjxyZWN0IHg9Ijc2IiB5PSIxMDgiIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiByeD0iNDAiIGZpbGw9InVybCgjcGcpIi8+PHBhdGggZD0iTTc2IDE0OGE0MCA0MCAwIDAxNDAtNDBoMjIwYTQwIDQwIDAgMDE0MCA0MHY0Nkg3NnoiIGZpbGw9InVybCgjaGQpIi8+PHBhdGggZD0iTTk2IDEyMmgyNjAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4zNSIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjI2IDE1MkMyMzUuODYgMTM3IDI2MCAxMzQuNzUgMjYwIDE1MkMyNjAgMTY5LjI1IDIzNS44NiAxNjcgMjI2IDE1MkMyMTYuMTQgMTM3IDE5MiAxMzQuNzUgMTkyIDE1MkMxOTIgMTY5LjI1IDIxNi4xNCAxNjcgMjI2IDE1MloiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIxMCIvPjxyZWN0IHg9IjEwMiIgeT0iMjE0IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iIzNiNWJhOSIvPjxyZWN0IHg9IjE2NCIgeT0iMjE0IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2NiZDVlMSIvPjxyZWN0IHg9IjIyNiIgeT0iMjE0IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2UyZThmMCIvPjxyZWN0IHg9IjI4OCIgeT0iMjE0IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2NiZDVlMSIvPjxyZWN0IHg9IjEwMiIgeT0iMjY2IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2NiZDVlMSIvPjxyZWN0IHg9IjE2NCIgeT0iMjY2IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iIzNiNWJhOSIvPjxyZWN0IHg9IjIyNiIgeT0iMjY2IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2NiZDVlMSIvPjxyZWN0IHg9IjI4OCIgeT0iMjY2IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2UyZThmMCIvPjxyZWN0IHg9IjEwMiIgeT0iMzE4IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2UyZThmMCIvPjxyZWN0IHg9IjE2NCIgeT0iMzE4IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iI2NiZDVlMSIvPjxyZWN0IHg9IjIyNiIgeT0iMzE4IiB3aWR0aD0iNDgiIGhlaWdodD0iMzgiIHJ4PSIxMCIgZmlsbD0iIzNiNWJhOSIvPjxyZWN0IHg9IjEzNCIgeT0iNzIiIHdpZHRoPSIyNCIgaGVpZ2h0PSI3MCIgcng9IjEyIiBmaWxsPSJ1cmwoI3JpbmcpIi8+PHJlY3QgeD0iMjk0IiB5PSI3MiIgd2lkdGg9IjI0IiBoZWlnaHQ9IjcwIiByeD0iMTIiIGZpbGw9InVybCgjcmluZykiLz48L2c+PGcgZmlsdGVyPSJ1cmwoI2RzKSI+PGNpcmNsZSBjeD0iMzYyIiBjeT0iMjM2IiByPSIxNiIgZmlsbD0idXJsKCNnb2xkKSIvPjxwYXRoIGQ9Ik0zMDAgMzgyQzMwMCAzMzAgMzEwIDI2MiAzNjIgMjUwQzQxNCAyNjIgNDI0IDMzMCA0MjQgMzgyTDQzOCA0MDBRNDQwIDQxNCA0MjQgNDE0SDMwMFEyODQgNDE0IDI4NiA0MDBaIiBmaWxsPSJ1cmwoI2dvbGQpIi8+PHJlY3QgeD0iMjgyIiB5PSIzOTgiIHdpZHRoPSIxNjAiIGhlaWdodD0iMjIiIHJ4PSIxMSIgZmlsbD0idXJsKCNnb2xkKSIvPjxwYXRoIGQ9Ik0zMjYgMzAwQzMzMCAyNzggMzQwIDI2NiAzNTIgMjYyIiBzdHJva2U9IiNmZmZiZTYiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iLjgiLz48Y2lyY2xlIGN4PSIzNjIiIGN5PSI0MzQiIHI9IjE4IiBmaWxsPSJ1cmwoI2dvbGQpIi8+PHBhdGggZD0iTTQ1MiAyODZxMTYgMjIgMCA0Nk00NzIgMjcwcTI2IDM4IDAgNzgiIHN0cm9rZT0iI2M4OTExYyIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiLz48L2c+PC9zdmc+';
 var WHATS_NEW=[
+ ['2.4.0',['New Windows program with its own window, installed like normal software','Automatic daily backups of your school files, with File > Restore a backup','Phones on Wi-Fi: the Android app copies the timetable from the PC and sends back quick changes']],
  ['2.3.0',['Holding bay under the timetable: park lessons while you rearrange (carry a lesson and click the bay, drag it there, or right-click > Park in holding bay), then pick them up and place them again','A lesson you pick up now looks exactly like the card on the timetable, at the same size, at every zoom level','Codes read in full at every zoom level, and option blocks look like the other cards']],
  ['2.2.1',['Master timetable: every subject code now reads in full at Fit zoom; option blocks show as GEO/ICT/PE','On phones the master timetable opens wider and scrolls sideways so lessons stay readable','ID cards: the back always fits on the card, and the QR code or barcode sits in a fixed place on the back','ID cards: the code on the front never covers details; long roles and names wrap instead of being cut, and crowded cards shrink slightly so every detail shows','ID cards: support staff list (bursar, secretary, drivers and others); staff cards show job title, department and subjects, and staff number; learner date of birth and house or bus are optional']],
  ['2.2.0',['ID cards for learners and staff: 6 designs, photos (one by one or many at once), QR code or barcode, front and back, A4 sheets or card printer, with preview','Master timetable: pick up a lesson and it follows the mouse; drop it on another lesson to swap them, then place the one you picked up','Right-click on master timetable lessons opens the lesson menu']],
@@ -3186,6 +3313,7 @@ function fileMenu(btn){
   var items=[['b6-new','New school file'],['b6-open','Open…'],['b6-save','Save'+(FILE?' ('+FILE.name+')':'')],['b6-saveas','Save as…']];
   if(rec.length){items.push('-');rec.slice(0,6).forEach(function(f){items.push(['b6-recent',f.name,' data-path="'+esc(f.path)+'" title="'+esc(f.path)+'"']);});}
   items.push('-',['b8-export','Preview and export (PDF, Excel, Word, image)',' data-what="print"'],['b6-xlsx-menu','Export to Excel (.xlsx)'],['b6-display','Live staff-room display'],[isLocked()?'b6-unlock':'b6-lock',isLocked()?'Unlock (admin PIN)':(W.prefs.pin?'Lock now':'Set an admin PIN…')],'-',['b6-whatsnew','What\'s new'],['b6-about','About Infinity Timetable']);
+  if(window.IT_DESKTOP)items.push('-',['b8-dk-backups','Restore a backup…'],['b8-dk-phones','Phones on Wi-Fi…']);
   items.push('-',['b8-exit','Close Infinity Timetable…']);
   cmOpen(r.left,r.bottom+4,items);
 }
@@ -6103,6 +6231,317 @@ var mutate_bay=mutate;mutate=function(fn){return mutate_bay(function(){fn();bayP
   /* the app keeps working when Android pauses it: save quietly */
   document.addEventListener('visibilitychange',function(){if(document.hidden){try{saveQuiet();}catch(e){}}});
 })();
+
+/* ===== v2.4: Windows program (Electron) extras - active only in the new Windows program ===== */
+IC.wifi='<path d="M5 12.55a11 11 0 0114 0"/><path d="M8.5 16.1a6 6 0 017 0"/><path d="M2 8.82a15 15 0 0120 0"/><circle cx="12" cy="20" r="1"/>';
+/* Close prompt, daily backups of unsaved work, Restore a backup, and phone sync over Wi-Fi (PC side). */
+var DK={on:false,lan:null,pubT:null,takeT:null};
+function dkInit(){
+  if(!HOST)return;
+  hostCall('backups',{}).then(function(r){if(!r||!r.list)return;DK.on=true;window.IT_DESKTOP=true;document.documentElement.classList.add('desktop');dkDaily();
+    hostCall('lan-status',{}).then(function(s){DK.lan=s;if(s&&s.on)dkLanLoop();});}).catch(function(){});
+}
+/* the window's close button shows the app's own Save / Don't save / Cancel box */
+window.ITDesktopClose=function(){try{if($('#dlg').open)return;openExit();}catch(e){}};
+/* once a day keep a backup of work that is only kept inside the program (no school file yet) */
+function dkDaily(){if(!DK.on)return;var d=new Date().toISOString().slice(0,10);
+  try{if(localStorage.getItem('it.dkday')===d)return;}catch(e){}
+  if(FILE&&FILE.path)return;
+  hostCall('backup-text',{name:(SN()||'School')+' (not saved to a file)',text:fileText()}).then(function(r){if(r&&r.ok){try{localStorage.setItem('it.dkday',d);}catch(e){}}});}
+function dkPubSoon(){if(DK.on&&DK.lan&&DK.lan.on){clearTimeout(DK.pubT);DK.pubT=setTimeout(dkPublish,1500);}}
+var _dkPersist=persist;persist=function(){_dkPersist();dkPubSoon();};
+var _dkSaveQuiet=saveQuiet;saveQuiet=function(){_dkSaveQuiet();if(DK.on){dkDaily();if(DK.lan&&DK.lan.on){clearTimeout(DK.pubT);DK.pubT=setTimeout(dkPublish,1200);}}};
+/* ---- restore a backup ---- */
+function dkSize(n){return n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';}
+B7A['b8-dk-backups']=function(){cmClose&&cmClose();hostCall('backups',{}).then(function(r){var l=(r&&r.list)||[];
+  openModal('Restore a backup','<p>A copy of each school file is kept every day you save it, and of unsaved work once a day. The newest 30 are kept.</p>'+
+   (l.length?'<div class="tw"><table class="vtable"><thead><tr><th>Backup</th><th>Saved</th><th>Size</th><th></th></tr></thead><tbody>'+l.map(function(b){return '<tr><td>'+esc(b.file.replace(/\.stt$/i,''))+'</td><td>'+esc(new Date(b.mtime).toLocaleString())+'</td><td>'+dkSize(b.size)+'</td><td style="text-align:right"><button class="btn sm" data-act="b8-dk-restore" data-name="'+esc(b.file)+'">Open</button></td></tr>';}).join('')+'</tbody></table></div>':'<p class="muted">No backups yet. They appear after you save.</p>')+
+   '<div class="row sp fbtns"><button class="btn" data-act="b8-dk-bkfolder">'+ico('folder',16)+' Open the backups folder</button><button class="btn" data-act="close">Close</button></div>','wide');});};
+B7A['b8-dk-bkfolder']=function(){hostCall('backup-folder',{});};
+B7A['b8-dk-restore']=function(ds){confirmBox('Open the backup "'+ds.name.replace(/\.stt$/i,'')+'"? It opens as a separate copy; use Save as to keep it. Your current work stays in its own file.','Open the backup').then(function(y){if(!y)return;
+  hostCall('backup-read',{name:ds.name}).then(function(r){if(!r||r.error){toast((r&&r.error)||'Could not open the backup');return;}
+    if(loadFileText(r.text,null)){setFile({name:'Restored '+ds.name.replace(/\.stt$/i,'')+'.stt'});if(FILE)FILE.dirty=true;closeModal();render();toast('Backup opened. Use Save as to keep it.');}});});};
+/* ---- phones on Wi-Fi (PC side) ---- */
+function dkPublish(){if(!(DK.lan&&DK.lan.on))return;hostCall('lan-publish',{text:fileText(),school:SN()}).catch(function(){});}
+function dkLanLoop(){clearInterval(DK.takeT);dkPublish();DK.takeT=setInterval(function(){if(!(DK.lan&&DK.lan.on)){clearInterval(DK.takeT);return;}
+  hostCall('lan-take',{}).then(function(r){var it=(r&&r.items)||[];if(!it.length)return;var n=0,c=0,names=[];
+    it.forEach(function(x){var res=dkMergeIn(x);if(res){n+=res.theirs;c+=res.conflicts;if(names.indexOf(x.dev)<0)names.push(x.dev);}});
+    dkPublish();if(n||c){render();toast('Changes from '+names.join(', ')+' merged'+(c?' ('+c+' edited on both: the PC\'s kept)':''));}
+  }).catch(function(){});},3000);}
+function dkMergeIn(x){var t,b=null;try{t=JSON.parse(x.text);if(x.base)b=JSON.parse(x.base);}catch(e){return null;}
+  if(!validW(t))return null;normW(t);if(b&&validW(b))normW(b);else b=null;
+  syncActive();var cur=JSON.parse(JSON.stringify(W)),res=mergeW(b||cur,cur,t),keep=W.cur,prefs=W.prefs;
+  W=res.w;W.prefs=prefs;W.cur=keep;if(!curSchool()||!curTT()){var s0=W.schools[0];W.cur={s:s0.id,t:s0.tts[0].id};}D=curTT().data;saveQuiet();
+  if(res.stat.theirs&&FILE){FILE.dirty=true;fileDirty();}return res.stat;}
+function dkPhonesHtml(){var s=DK.lan||{};
+  if(!s.on)return '<p>Let phones with the Infinity Timetable app copy this timetable over the school Wi-Fi, and send back quick changes such as swaps and cover. Nothing goes over the internet.</p><p class="muted">The PC and the phones must be on the same Wi-Fi. The first time, Windows may ask to allow Infinity Timetable on private networks: choose Allow.</p><div class="row sp fbtns"><button class="btn" data-act="close">Close</button><button class="btn primary" data-act="b8-dk-lanon">'+ico('wifi',16)+' Turn on phone sync</button></div>';
+  var ip=(s.ips||[])[0]||'',addr=ip?ip+(s.port&&s.port!==47860?':'+s.port:''):'',qr=ip?'ITSYNC1|'+ip+':'+s.port+'|'+s.code+'|'+(SN()||''):'';
+  return '<div class="dkpair">'+(qr?'<div class="dkqr">'+QR.svg(qr,180)+'</div>':'')+'<div><p>On the phone: <b>More → Sync with PC</b>, then scan this code, or type:</p>'+
+   '<div class="dkbig"><span>PC address</span><b>'+esc(addr||'No Wi-Fi found')+'</b></div><div class="dkbig"><span>Code</span><b>'+esc(s.code)+'</b></div>'+
+   ((s.ips||[]).length>1?'<p class="muted">Other addresses for this PC: '+esc(s.ips.slice(1).join(', '))+'</p>':'')+
+   (s.devices&&s.devices.length?'<p class="muted">Phones that synced this week: '+esc(s.devices.join(', '))+'</p>':'')+
+   (s.last?'<p class="muted">Last: '+esc(s.last.dev)+' '+(s.last.what==='push'?'sent changes':'copied the timetable')+' at '+esc(new Date(s.last.at).toLocaleTimeString())+'</p>':'')+'</div></div>'+
+   '<div class="row sp fbtns"><button class="btn" data-act="b8-dk-lanoff">Turn off phone sync</button><button class="btn primary" data-act="close">Done</button></div>';}
+B7A['b8-dk-phones']=function(){cmClose&&cmClose();if(!DK.on){toast('Phone sync works in the Infinity Timetable Windows program');return;}
+  hostCall('lan-status',{}).then(function(s){DK.lan=s;openModal('Phones on Wi-Fi',dkPhonesHtml(),'wide');});};
+B7A['b8-dk-lanon']=function(){hostCall('lan-start',{}).then(function(s){DK.lan=s;dkLanLoop();$('#dlg .db')?($('#dlg .db').innerHTML=dkPhonesHtml()):B7A['b8-dk-phones']();});};
+B7A['b8-dk-lanoff']=function(){hostCall('lan-stop',{}).then(function(s){DK.lan=s;clearInterval(DK.takeT);closeModal();toast('Phone sync is off');});};
+setTimeout(dkInit,800);
+
+/* ===== v2.4: phone layout ===== */
+/* On small screens: slim top bar, bottom menu, one day at a time, tap a lesson for actions and
+   best places, slots that say what will happen, a holding bar while moving a lesson,
+   "My day" on Home, quick cover, Wi-Fi sync with the PC and viewer mode (PIN lock). */
+IC.dots='<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>';
+IC.people='<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0"/><path d="M16 11a3 3 0 100-6M21 20a6 6 0 00-4-5.6"/>';
+IC.hand='<path d="M8 13V5.5a1.5 1.5 0 013 0V11M11 10V4.5a1.5 1.5 0 013 0V11M14 10.5V6a1.5 1.5 0 013 0v7a7 7 0 01-7 7h-1a6 6 0 01-5-2.7L3 13.6a1.6 1.6 0 012.6-1.8L8 14"/>';
+IC.undo='<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>';
+var PHONE_PEOPLE=['teachers','classes','learners','rooms','subjects','departments'];
+function isPhone(){var p=(W&&W.prefs&&W.prefs.phoneUI)||'auto';if(p==='on')return true;if(p==='off')return false;return window.innerWidth<=760;}
+['b8-ph-day','b8-ph-kind','b8-ph-ent','b8-ph-sheet','b8-ph-card','b8-ph-close','b8-ph-me','b8-ph-meset','b8-ph-sync','b8-ph-syncgo','b8-ph-scan','b8-ph-ui','b8-ph-share'].forEach(function(a){LOCK_OK[a]=1;});
+/* ---------- bottom sheet ---------- */
+function phSheet(title,html){var s=$('#phsheet');if(!s){s=document.createElement('div');s.id='phsheet';s.className='phsheet';document.body.appendChild(s);}
+  s.innerHTML='<div class="phsb" data-act="b8-ph-close"></div><div class="phsc" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="grab"></div><div class="row sp"><h3>'+esc(title)+'</h3><button class="btn sm ghost" data-act="b8-ph-close" aria-label="Close">'+ico('x',16)+'</button></div><div class="phbody">'+html+'</div></div>';
+  s.hidden=false;document.body.classList.add('phsheet-open');}
+function phSheetClose(){var s=$('#phsheet');if(s){s.hidden=true;s.innerHTML='';}document.body.classList.remove('phsheet-open');}
+B7A['b8-ph-close']=function(){phSheetClose();};
+var _phBack=window.ITBack;window.ITBack=function(){var s=$('#phsheet');if(s&&!s.hidden){phSheetClose();return true;}return _phBack?_phBack():false;};
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var s=$('#phsheet');if(s&&!s.hidden){e.preventDefault();e.stopImmediatePropagation();phSheetClose();}}},true);
+/* ---------- chrome: top bar and bottom menu ---------- */
+function phChrome(){
+  var on=isPhone();document.body.classList.toggle('phone',on);
+  var bar=$('#phbar'),nav=$('#phnav'),hold=$('#phhold');
+  if(!on){[bar,nav,hold].forEach(function(x){if(x)x.hidden=true;});return;}
+  if(!bar){bar=document.createElement('div');bar.id='phbar';document.body.insertBefore(bar,document.body.firstChild);}
+  if(!nav){nav=document.createElement('nav');nav.id='phnav';nav.setAttribute('aria-label','Main');document.body.appendChild(nav);}
+  if(!hold){hold=document.createElement('div');hold.id='phhold';document.body.appendChild(hold);}
+  var tt=curTT();bar.hidden=false;nav.hidden=false;
+  bar.innerHTML='<button class="phbrand" data-act="tab" data-tab="schools" title="Schools and timetables"><b>'+esc(SN()||'Infinity Timetable')+'</b><span>'+esc(tt?tt.name:'')+(isLocked()?' · viewer mode':'')+'</span></button>'+
+    (isLocked()?'':'<button class="btn sm ghost" data-act="undo" aria-label="Undo"'+(undoS.length?'':' disabled')+'>'+ico('undo',18)+'</button>')+
+    '<button class="btn sm ghost" data-act="b8-ph-sheet" data-v="more" aria-label="Menu">'+ico('dots',20)+'</button>';
+  var t=ui.tab,grp=PHONE_PEOPLE.indexOf(t)>=0?'people':['home','timetable','lessons'].indexOf(t)>=0?t:'more';
+  var b=function(id,label,icon,act){return '<button type="button" '+act+(grp===id?' aria-current="page"':'')+'>'+ico(icon,22)+'<span>'+label+'</span></button>';};
+  nav.innerHTML=b('home','Home','home','data-act="tab" data-tab="home"')+b('timetable','Timetable','calendar','data-act="tab" data-tab="timetable"')+b('lessons','Lessons','list','data-act="tab" data-tab="lessons"')+
+    b('people','People','people','data-act="b8-ph-sheet" data-v="people"')+b('more','More','grid','data-act="b8-ph-sheet" data-v="more"');
+  phHold();}
+function phHold(){var h=$('#phhold');if(!h)return;var ci=isPhone()&&ui.lift&&(ui.tab==='timetable')?carryInfo():null;
+  if(!ci){h.hidden=true;document.body.classList.remove('ph-holding');return;}
+  var l=lesson(ci.lid);h.hidden=false;document.body.classList.add('ph-holding');
+  h.innerHTML='<span class="phhicon">'+ico('hand',18)+'</span><span class="phht"><b>'+esc(lTitle(l))+'</b><small>'+esc(lClassNames(l))+(ci.held?' · place it to finish the swap':' · tap a slot')+'</small></span>'+
+    (ui.lift.type==='new'?'':'<button class="btn sm" data-act="b8-ph-park">Park</button>')+'<button class="btn sm" data-act="b8-ph-cancel">Cancel</button>';}
+B7A['b8-ph-park']=function(){if(typeof bayParkCarried==='function')bayParkCarried();render();};
+B7A['b8-ph-cancel']=function(){if(ui.lift){if(typeof carryCancel==='function')carryCancel();else{ui.lift=null;render();}}};
+B7A['b8-ph-sheet']=function(ds){var tabs=tabsFor().filter(function(x){return x[0]!=='sep';}),h='';
+  var tile=function(id,label){var ti=TAB_ICON[id]||['info',205];return '<button class="phtile" data-act="tab" data-tab="'+id+'">'+badge(ti[0],ti[1],22)+'<span>'+esc(label)+'</span></button>';};
+  var lab=function(t){return t[0]==='teachers'?word('wTeacher',1):t[0]==='classes'?word('wClass',1):t[1];};
+  if(ds.v==='people'){h='<div class="phtiles">'+tabs.filter(function(t){return PHONE_PEOPLE.indexOf(t[0])>=0;}).map(function(t){return tile(t[0],lab(t));}).join('')+'</div>';phSheet('People',h);return;}
+  var main=['home','timetable','lessons'].concat(PHONE_PEOPLE);
+  h='<div class="phtiles">'+tabs.filter(function(t){return main.indexOf(t[0])<0;}).map(function(t){return tile(t[0],lab(t));}).join('')+'</div>'+
+    '<div class="phlist">'+(window.ITAndroid||!window.IT_DESKTOP?'<button data-act="b8-ph-sync">'+ico('wifi',18)+'<span>Sync with PC<small>'+esc(phSyncLine())+'</small></span></button>':'')+
+    '<button data-act="b8-ph-me">'+ico('users',18)+'<span>Who is using this phone<small>'+esc(phMeLabel())+'</small></span></button>'+
+    (W.prefs&&W.prefs.pin?(isLocked()?'<button data-act="b6-unlock">'+ico('lock',18)+'<span>Unlock editing<small>Viewer mode is on</small></span></button>':'<button data-act="b6-lock">'+ico('lock',18)+'<span>Viewer mode<small>Lock editing with the admin PIN</small></span></button>'):'<button data-act="b6-lock">'+ico('lock',18)+'<span>Viewer mode<small>Set an admin PIN so staff can view but not change</small></span></button>')+
+    '<button data-act="b8-ph-file">'+ico('folder',18)+'<span>File<small>Open, save, export</small></span></button>'+
+    '<button data-act="versions">'+ico('clock',18)+'<span>Versions</span></button>'+
+    '<button data-act="b3-lic">'+ico('key',18)+'<span>Licence</span></button>'+
+    '<button data-act="theme">'+ico('sun',18)+'<span>Theme</span></button>'+
+    '<button data-act="b8-ph-ui">'+ico('grid',18)+'<span>Use the full layout<small>For tablets and big screens</small></span></button></div>';
+  phSheet('Menu',h);};
+B7A['b8-ph-ui']=function(){W.prefs=W.prefs||{};W.prefs.phoneUI=isPhone()?'off':'auto';saveQuiet();phSheetClose();render();toast(isPhone()?'Phone layout on':'Full layout on. Menu > Settings > Display brings the phone layout back.');};
+/* ---------- timetable: one day at a time ---------- */
+function phState(){var s=ui.ph=ui.ph||{};var days=D.school.days;
+  if(!s.kind)s.kind=(ui.view==='teacher'||ui.view==='room')?ui.view:'class';
+  var list=s.kind==='teacher'?D.teachers:s.kind==='room'?D.rooms:D.classes;
+  if(s.kind!=='school'&&(!s.id||!by(list,s.id))){var me=W.prefs&&W.prefs.me;s.id=(s.kind==='teacher'&&me&&me.kind==='teacher'&&by(D.teachers,me.id))?me.id:(ui.entity&&by(list,ui.entity)?ui.entity:(list[0]&&list[0].id));}
+  if(!s.day||days.indexOf(s.day)<0)s.day=days.indexOf(todayDay())>=0?todayDay():days[0];
+  return s;}
+function phPls(kind,id,day){return D.placements.filter(function(p){if(p.day!==day)return false;var l=lesson(p.lessonId);return l&&(kind==='school'||lHas(l,kind,id));}).map(function(p){var l=lesson(p.lessonId);return {p:p,l:l,i:periodIndex(p.pid),n:l.length||1};}).filter(function(x){return x.i>=0;});}
+function phSwapFor(ci,day,i,occ){var r0=evalSlot(ci.lid,day,i,ci.ign);if(!r0.hard.length)return null;if(r0.hard.some(function(h){return h.k==='fit'||h.k==='act';}))return null;
+  for(var k=0;k<occ.length;k++){var x=by(D.placements,occ[k]);if(!x||x.locked||ci.ign.indexOf(x.id)>=0)continue;if(!evalSlot(ci.lid,day,i,ci.ign.concat([x.id])).hard.length)return x;}return null;}
+function phCard(x,kind,first){var l=x.l,t=lTeachers(l).map(tname).join(', '),r=lRooms(l).map(rname).join(', '),bad=plIssues(x.p).hard.length,lifted=ui.lift&&ui.lift.plId===x.p.id;
+  var sub=kind==='teacher'?lClassNames(l)+(r?' · '+r:''):kind==='room'?lClassNames(l)+(t?' · '+t:''):(t+(r?' · '+r:''));
+  if(!first)return '<button class="phcard cont" data-act="b8-ph-card" data-pl="'+x.p.id+'" data-plx="'+x.p.id+'" style="--h:'+lHue(l)+'"><span>↳ '+esc(lTitle(l))+' continues</span></button>';
+  return '<button class="phcard'+(bad?' bad':'')+(lifted?' lifted':'')+'" data-act="b8-ph-card" data-pl="'+x.p.id+'" data-plx="'+x.p.id+'" style="--h:'+lHue(l)+'"><b>'+(x.p.locked?ico('lock',12)+' ':'')+esc(lTitle(l))+(x.n>1?' <em>double</em>':'')+'</b><span>'+esc(sub)+'</span>'+(bad?'<small>'+esc(plIssues(x.p).hard[0].m)+'</small>':'')+'</button>';}
+function phSlotLabel(ci,day,i,occ){var r=evalSlot(ci.lid,day,i,ci.ign);
+  if(!r.hard.length)return {c:'ok',t:r.soft.length?'Fits here ('+r.soft[0].m.toLowerCase()+')':'Free · fits here'};
+  var sx=phSwapFor(ci,day,i,occ);if(sx)return {c:'swap',t:'Swap with '+lTitle(lesson(sx.lessonId)),x:sx};
+  return {c:'bad',t:r.hard[0].m};}
+function phDayRows(kind,id,day){var P=D.school.periods,pls=phPls(kind,id,day),ci=ui.lift?carryInfo():null,h='',lockd=isLocked();
+  P.forEach(function(p,i){
+    if(p.brk){h+='<div class="phbrk"><span>'+esc(p.label)+'</span><small>'+esc(p.start||'')+'</small></div>';return;}
+    var here=pls.filter(function(x){return x.i===i;}),cont=pls.filter(function(x){return x.i<i&&x.i+x.n>i;}),occ=here.concat(cont).map(function(x){return x.p.id;});
+    var lab=ci&&(kind!=='class'||lcls(lesson(ci.lid)).indexOf(id)>=0)?phSlotLabel(ci,day,i,occ):null;
+    var cards=cont.map(function(x){return phCard(x,kind,false);}).join('')+here.map(function(x){return phCard(x,kind,true);}).join('');
+    var empty=!here.length&&!cont.length;
+    h+='<div class="phrow'+(p.act?' act':'')+'"><div class="phtime"><b>'+esc(p.label)+'</b><small>'+esc(p.start||'')+(p.end?'–'+esc(p.end):'')+'</small></div>'+
+      '<div class="cell phslot'+(lab?' '+lab.c:'')+'" data-d="'+day+'" data-i="'+i+'"'+(kind==='class'?' data-cls="'+id+'"':'')+'>'+cards+
+      (lab&&(empty||lab.c!=='bad')?'<button class="phlab '+lab.c+'" data-act="b8-ph-slot" data-d="'+day+'" data-i="'+i+'">'+ico(lab.c==='ok'?'check':lab.c==='swap'?'refresh':'x',14)+' '+esc(lab.t)+'</button>':'')+
+      (!lab&&empty&&!lockd?'<button class="phempty" data-act="b8-ph-slot" data-d="'+day+'" data-i="'+i+'">Free</button>':'')+(!lab&&empty&&lockd?'<span class="phfree">Free</span>':'')+
+      (lab&&lab.c==='bad'&&!empty?'<small class="phwhy">'+esc(lab.t)+'</small>':'')+'</div></div>';});
+  return h;}
+function phSchoolRows(day){var P=D.school.periods,h='',ci=ui.lift?carryInfo():null;
+  (ui.secf?D.classes.filter(function(c){return classInSection(c.id,ui.secf);}):D.classes).forEach(function(c){var pls=phPls('class',c.id,day);
+    h+='<div class="phsrow"><div class="phsname"><b>'+esc(c.name)+'</b></div><div class="phstrip">'+P.map(function(p,i){if(p.brk)return '<span class="phsgap"></span>';
+      var x=pls.filter(function(y){return y.i<=i&&y.i+y.n>i;})[0],occ=x?[x.p.id]:[],lab=ci&&lcls(lesson(ci.lid)).indexOf(c.id)>=0?phSlotLabel(ci,day,i,occ):null;
+      var inner=x?'<button class="phchip" data-act="b8-ph-card" data-pl="'+x.p.id+'" data-plx="'+x.p.id+'" style="--h:'+lHue(x.l)+'">'+esc(lparts(x.l).map(function(q){var s=by(D.subjects,q.subjectId);return s?sShort(s):'?';}).filter(function(v,k,a){return a.indexOf(v)===k;}).join('/'))+'</button>':
+        '<button class="phchip empty'+(lab?' '+lab.c:'')+'" data-act="b8-ph-slot" data-d="'+day+'" data-i="'+i+'" data-cls="'+c.id+'" aria-label="'+esc(c.name+' '+p.label)+'">'+(lab?(lab.c==='ok'?'✓':lab.c==='swap'?'⇄':'×'):'')+'</button>';
+      return '<span class="cell phscl'+(lab?' '+lab.c:'')+'" data-d="'+day+'" data-i="'+i+'" data-cls="'+c.id+'"><small>'+esc(p.label)+'</small>'+inner+'</span>';}).join('')+'</div></div>';});
+  return h;}
+function phTodoFor(kind,id){return D.lessons.filter(function(l){return (kind==='school'||lHas(l,kind,id))&&placedCount(l.id)<(l.perWeek||0);});}
+function phTimetable(){var s=phState(),days=D.school.days,list=s.kind==='teacher'?D.teachers:s.kind==='room'?D.rooms:D.classes,todo=phTodoFor(s.kind,s.id),td=todayDay();
+  var seg='<div class="seg phseg" role="group">'+[['class',word('wClass')],['teacher',word('wTeacher')],['room','Room'],['school','Whole school']].map(function(k){return '<button type="button" data-act="b8-ph-kind" data-v="'+k[0]+'" aria-pressed="'+(s.kind===k[0])+'">'+esc(k[1])+'</button>';}).join('')+'</div>';
+  var h='<div class="phtt">'+seg+'<div class="row phent">'+(s.kind==='school'?(sectionsList().length?'<label class="row" style="gap:6px">Section '+sectionSelect('secf',ui.secf)+'</label>':''):'<select class="in" data-b8="phent" aria-label="Choose">'+list.map(function(e){return '<option value="'+e.id+'"'+(e.id===s.id?' selected':'')+'>'+esc(e.name)+'</option>';}).join('')+'</select>')+
+    (todo.length&&!isLocked()?'<button class="pill warn" data-act="b8-ph-todo">'+todo.length+' to place</button>':'')+'</div>'+
+    '<div class="phdays" role="group" aria-label="Day">'+days.map(function(d){return '<button type="button" data-act="b8-ph-day" data-v="'+d+'" aria-pressed="'+(s.day===d)+'">'+esc(d.slice(0,3))+(d===td?'<i class="dot"></i>':'')+'</button>';}).join('')+'</div>'+
+    '<div class="phday" id="phday">'+(s.kind==='school'?phSchoolRows(s.day):phDayRows(s.kind,s.id,s.day))+'</div></div>';
+  return '<div class="pagehead slim"><h1>Timetable</h1></div>'+h;}
+B7A['b8-ph-kind']=function(ds){var s=phState();s.kind=ds.v;s.id=null;render();};
+B7A['b8-ph-day']=function(ds){phState().day=ds.v;render();};
+B8F['phent']=function(el,type){if(type!=='change')return;var s=phState();s.id=el.value;ui.view=s.kind;ui.entity=el.value;render();};
+/* swipe left and right to change day */
+(function(){var x0=null,y0=null;document.addEventListener('touchstart',function(e){var t=e.target.closest&&e.target.closest('#phday');if(!t||!e.touches[0]){x0=null;return;}x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
+  document.addEventListener('touchend',function(e){if(x0==null||!e.changedTouches[0])return;var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)<70||Math.abs(dy)>Math.abs(dx)*0.7)return;
+    var s=phState(),days=D.school.days,i=days.indexOf(s.day)+(dx<0?1:-1);if(days[i]){s.day=days[i];render();}},{passive:true});})();
+/* ---------- tapping a lesson ---------- */
+function phBest(lid,ign,limit){var days=D.school.days,P=D.school.periods,out=[],L=lesson(lid);if(!L)return out;
+  var curPl=ign&&ign[0]?by(D.placements,ign[0]):null;
+  days.forEach(function(d,di){P.forEach(function(p,i){if(p.brk)return;if(curPl&&curPl.day===d&&periodIndex(curPl.pid)===i)return;
+    var r=evalSlot(lid,d,i,ign||[]);
+    if(!r.hard.length){out.push({d:d,i:i,di:di,stars:r.soft.length?(r.soft.length>1?1:2):3,why:r.soft[0]?r.soft[0].m:''});return;}
+    if(r.hard.some(function(h){return h.k==='fit'||h.k==='act';}))return;
+    var occ=D.placements.filter(function(q){var l=lesson(q.lessonId);if(!l||q.day!==d)return false;var qi=periodIndex(q.pid);return qi<=i&&qi+(l.length||1)>i&&lcls(l).some(function(c){return lcls(L).indexOf(c)>=0;});}).map(function(q){return q.id;});
+    var ci={lid:lid,ign:ign||[]},sx=phSwapFor(ci,d,i,occ);if(sx)out.push({d:d,i:i,di:di,stars:1,swap:sx});});});
+  return out.sort(function(a,b){return (b.stars-a.stars)||(a.swap?1:0)-(b.swap?1:0)||(a.di-b.di)||(a.i-b.i);}).slice(0,limit||6);}
+function phBestHtml(lid,ign,plId){var b=phBest(lid,ign,6),P=D.school.periods;
+  if(!b.length)return '<p class="muted">No free place fits this lesson. Try moving or parking another lesson first.</p>';
+  return '<div class="phbest">'+b.map(function(x){return '<button data-act="b8-ph-put" data-d="'+x.d+'" data-i="'+x.i+'"'+(plId?' data-pl="'+plId+'"':' data-lid="'+lid+'"')+(x.swap?' data-swap="'+x.swap.id+'"':'')+'><span><b>'+esc(x.d)+' · '+esc(P[x.i].label)+'</b><small>'+esc(P[x.i].start||'')+(x.swap?' · swap with '+esc(lTitle(lesson(x.swap.lessonId))):x.why?' · '+esc(x.why):'')+'</small></span><span class="stars" aria-label="'+x.stars+' of 3">'+'★★★'.slice(0,x.stars)+'<i>'+'★★★'.slice(x.stars)+'</i></span></button>';}).join('')+'</div>';}
+B7A['b8-ph-card']=function(ds){var p=by(D.placements,ds.pl),l=p&&lesson(p.lessonId);if(!l)return;
+  if(ui.lift&&!(ui.lift.type==='move'&&ui.lift.plId===p.id)){var cell=document.querySelector('[data-plx="'+p.id+'"]');cell=cell&&cell.closest('.cell');if(cell){tryPlace(cell.dataset.d,+cell.dataset.i,cell);render();}return;}
+  var P=D.school.periods,i=periodIndex(p.pid),n=l.length||1,iss=plIssues(p);
+  var info='<div class="phinfo" style="--h:'+lHue(l)+'"><b>'+esc(lTitle(l))+'</b><span>'+esc(lClassNames(l))+'</span><span>'+esc(lTeachers(l).map(tname).join(', ')||'No teacher')+(lRooms(l).length?' · '+esc(lRooms(l).map(rname).join(', ')):'')+'</span><span>'+esc(p.day+' · '+P[i].label+' · '+(P[i].start||'')+(P[i+n-1]&&P[i+n-1].end?'–'+P[i+n-1].end:''))+(n>1?' · double':'')+'</span>'+(iss.hard.length?'<span class="bad">'+esc(iss.hard[0].m)+'</span>':'')+'</div>';
+  var fake=document.createElement('div');fake.className='pcard';fake.dataset.pl=p.id;var inner=document.createElement('span');fake.appendChild(inner);
+  var items=(typeof cmItems==='function'?cmItems(inner):[]).filter(function(x){return x!=='-';});
+  var acts=isLocked()?items.filter(function(x){return x[0]==='b4-cm-show';}):items;
+  var h=info+'<div class="phacts">'+acts.map(function(x){return '<button class="btn" data-act="'+x[0]+'"'+(x[2]||'')+'>'+esc(x[1].replace(' (lift and place somewhere else)',''))+'</button>';}).join('')+'</div>';
+  if(!isLocked()&&!p.locked)h+='<h4>Best places · tap to move it there</h4>'+phBestHtml(l.id,[p.id],p.id);
+  phSheet(lTitle(l),h);};
+/* the menu actions run as usual; close the sheet first */
+['b4-cm-move','b4-cm-edit','lock','unplace','b4-cm-show','b8-bay-park','b4-cm-unok'].forEach(function(a){var f=B7A[a];if(f){B7A[a]=function(ds,el){if(el&&el.closest&&el.closest('#phsheet'))phSheetClose();return f.apply(this,arguments);};}});
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#phsheet [data-act]');if(!b)return;var a=b.dataset.act;if(['b4-cm-move','b4-cm-edit','lock','unplace','b4-cm-show','b4-cm-unok','b8-bay-park','tab','versions','theme','b3-lic','b6-lock','b6-unlock'].indexOf(a)>=0)setTimeout(phSheetClose,0);},true);
+B7A['b8-ph-file']=function(){phSheetClose();var b=$('#phbar [data-v="more"]');if(typeof fileMenu==='function')fileMenu(b);};
+B7A['b8-ph-put']=function(ds){var d=ds.d,i=+ds.i;
+  if(ds.pl){var p=by(D.placements,ds.pl);if(!p)return;ui.lift={type:'move',plId:p.id};}else if(ds.lid){ui.lift={type:'new',lessonId:ds.lid};}
+  var cell=null;if(ds.swap){var L=lesson(ds.pl?by(D.placements,ds.pl).lessonId:ds.lid);cell=document.createElement('div');cell.className='cell';cell.dataset.d=d;cell.dataset.i=i;if(L&&lcls(L)[0])cell.dataset.cls=lcls(L).filter(function(c){var sx=by(D.placements,ds.swap);return sx&&lcls(lesson(sx.lessonId)).indexOf(c)>=0;})[0]||lcls(L)[0];var sp=document.createElement('span');sp.dataset.plx=ds.swap;cell.appendChild(sp);}
+  phSheetClose();tryPlace(d,i,cell);var s=phState();if(!ui.lift||ui.lift.type!=='held')s.day=d;render();};
+/* tapping a slot: place what you hold, or see what fits here */
+B7A['b8-ph-slot']=function(ds,el){var cell=el&&el.closest?el.closest('.cell'):null;
+  if(ui.lift){tryPlace(ds.d,+ds.i,cell);render();return;}
+  if(isLocked())return;var s=phState(),cls=cell&&cell.dataset.cls;
+  var kind=cls?'class':s.kind,id=cls||s.id,fits=phTodoFor(kind,id).filter(function(l){return !evalSlot(l.id,ds.d,+ds.i,[]).hard.length;});
+  var P=D.school.periods,h='<p class="muted">'+esc(ds.d+' · '+P[+ds.i].label+' '+(P[+ds.i].start||''))+'</p>';
+  h+=fits.length?'<h4>Lessons still to place that fit here</h4><div class="phbest">'+fits.map(function(l){return '<button data-act="b8-ph-put" data-lid="'+l.id+'" data-d="'+ds.d+'" data-i="'+ds.i+'"><span><b>'+esc(lTitle(l))+'</b><small>'+esc(lClassNames(l)+' · '+lTeachers(l).map(tname).join(', '))+'</small></span><span class="phn">'+(l.perWeek-placedCount(l.id))+' left</span></button>';}).join('')+'</div>':
+    '<p>No lesson still to place fits here. To use this slot, tap a lesson and choose Move, or park lessons in the holding bay.</p>';
+  phSheet('What fits here?',h);};
+B7A['b8-ph-todo']=function(){var s=phState(),todo=phTodoFor(s.kind,s.id);
+  phSheet(todo.length+' lesson'+(todo.length===1?'':'s')+' to place',todo.length?'<div class="phbest">'+todo.map(function(l){return '<button data-act="b8-ph-todo1" data-lid="'+l.id+'"><span><b>'+esc(lTitle(l))+'</b><small>'+esc(lClassNames(l)+' · '+lTeachers(l).map(tname).join(', '))+'</small></span><span class="phn">'+(l.perWeek-placedCount(l.id))+' left</span></button>';}).join('')+'</div>':'<p>Everything is placed.</p>');};
+B7A['b8-ph-todo1']=function(ds){var l=lesson(ds.lid);if(!l)return;phSheet(lTitle(l)+' · '+lClassNames(l),'<h4>Best places · tap to put it there</h4>'+phBestHtml(l.id,[],null)+'<div class="row"><button class="btn" data-act="b8-ph-hold" data-lid="'+l.id+'">'+ico('hand',16)+' Pick it up and choose a slot myself</button></div>');};
+B7A['b8-ph-hold']=function(ds){ui.lift={type:'new',lessonId:ds.lid};phSheetClose();render();};
+/* ---------- who is using this phone ---------- */
+function phMe(){var m=W.prefs&&W.prefs.me;if(m&&m.kind==='teacher'&&!by(D.teachers,m.id))return null;return m||null;}
+function phMeLabel(){var m=phMe();return !m?'Not chosen':m.kind==='admin'?'Deputy head or timetabler':tname(m.id);}
+B7A['b8-ph-me']=function(){phSheetClose();var m=phMe();
+  phSheet('Who is using this phone?','<p class="muted">Home then shows your day.</p><div class="phbest"><button data-act="b8-ph-meset" data-v="admin"'+(m&&m.kind==='admin'?' aria-pressed="true"':'')+'><span><b>Deputy head or timetabler</b><small>Today\'s absences, cover and changes for the whole school</small></span></button>'+
+   D.teachers.slice().sort(function(a,b){return String(a.name).localeCompare(String(b.name));}).map(function(t){return '<button data-act="b8-ph-meset" data-v="'+t.id+'"'+(m&&m.id===t.id?' aria-pressed="true"':'')+'><span><b>'+esc(t.name)+'</b></span></button>';}).join('')+'</div>');};
+B7A['b8-ph-meset']=function(ds){W.prefs=W.prefs||{};W.prefs.me=ds.v==='admin'?{kind:'admin'}:{kind:'teacher',id:ds.v};saveQuiet();phSheetClose();ui.tab='home';render();};
+/* ---------- My day ---------- */
+function isoToday(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function nowMin(){var d=new Date();return d.getHours()*60+d.getMinutes();}
+function phDuties(tid,day){var out=[],s=curSchool();if(!s)return out;s.tts.forEach(function(t){if(ttType(t)!=='duty'||!t.data.duty)return;var d=t.data.duty;
+  (d.asg||[]).forEach(function(a){if(a.day===day&&a.teacherId===tid){var po=by(d.posts||[],a.postId);out.push({name:po?po.name:'Duty',time:po?(po.time||po.start||''):''});}});});return out;}
+function phMyCover(tid,date){var out=[];coverOf().absences.forEach(function(a){if(a.date!==date)return;Object.keys(a.subs||{}).forEach(function(pid){if(a.subs[pid]!==tid)return;var p=by(D.placements,pid),l=p&&lesson(p.lessonId);if(l)out.push({p:p,l:l,i:periodIndex(p.pid),forT:a.teacherId});});});return out;}
+function phMyDay(){var me=phMe(),day=todayDay(),date=isoToday(),P=D.school.periods,now=nowMin(),greet=new Date().getHours()<12?'Good morning':new Date().getHours()<17?'Good afternoon':'Good evening';
+  var h='<div class="pagehead slim"><h1>'+greet+'</h1><p class="lead">'+esc(new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}))+' · '+esc(SN())+'</p></div>';
+  var sync=W.prefs&&W.prefs.lanPair?'<section class="card phsync"><div class="row sp"><span>'+ico('wifi',16)+' '+esc(phSyncLine())+'</span><button class="btn sm" data-act="b8-ph-syncgo">Sync now</button></div></section>':'';
+  if(!me)return h+sync+'<section class="card"><h2>Who is using this phone?</h2><p>Choose once, and Home shows your day: your next lesson, duties and cover.</p><button class="btn primary" data-act="b8-ph-me">Choose</button></section>'+phQuickLinks();
+  if(me.kind==='admin'){var abs=coverOf().absences.filter(function(a){return a.date===date;}),rows=coverRows(date),need=rows.filter(function(r){return !(r.a.subs||{})[r.x.p.id];});
+    h+=sync+'<section class="card"><div class="row sp"><h2>'+ico('users',18)+' Absent today</h2><button class="btn sm" data-act="b8-ph-me">Change</button></div>'+
+      (abs.length?'<p>'+abs.map(function(a){return esc(tname(a.teacherId));}).join(', ')+'</p>':'<p class="muted">No one recorded absent today.</p>')+
+      (isLocked()?'':'<div class="row"><button class="btn primary" data-act="b8-ph-absent">Mark someone absent</button>'+(rows.length?'<button class="btn" data-act="b8-ph-cover">Cover ('+(rows.length-need.length)+' of '+rows.length+' done)</button>':'')+'</div>')+'</section>';
+    if(need.length)h+='<section class="card warnc"><h2>'+need.length+' lesson'+(need.length===1?'':'s')+' still need cover</h2>'+need.slice(0,6).map(function(r){return '<div class="phmini"><b>'+esc(P[r.x.i].label)+'</b> '+esc(lTitle(r.x.l)+' · '+lClassNames(r.x.l))+' <small>('+esc(tname(r.a.teacherId))+')</small></div>';}).join('')+'</section>';
+    var c=counts(),cl=clashCount();h+='<section class="card"><h2>Timetable</h2><p>'+c.placed+' of '+c.req+' lessons placed · '+(cl?cl+' clash'+(cl>1?'es':''):'no clashes')+'</p><button class="btn" data-act="tab" data-tab="timetable">Open the timetable</button></section>';
+    return h+phQuickLinks();}
+  var tid=me.id,mine=phPls('teacher',tid,day).sort(function(a,b){return a.i-b.i;}),cov=phMyCover(tid,date).sort(function(a,b){return a.i-b.i;}),duties=phDuties(tid,day);
+  var all=mine.map(function(x){return {i:x.i,n:x.n,l:x.l,cover:false};}).concat(cov.map(function(x){return {i:x.i,n:x.l.length||1,l:x.l,cover:true,forT:x.forT};})).sort(function(a,b){return a.i-b.i;});
+  var cur=null,next=null;all.forEach(function(x){var a=tmin(P[x.i].start),b=tmin((P[x.i+x.n-1]||P[x.i]).end);if(a>=0&&b>=0&&now>=a&&now<b)cur=x;if(!next&&a>now)next=x;});
+  var mins=function(m){return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min';};
+  h+=sync+'<section class="card phnext">'+(cur?'<span class="pill ok">Now</span><h2>'+esc(lTitle(cur.l))+'</h2><p>'+esc(lClassNames(cur.l))+(lRooms(cur.l).length?' · '+esc(lRooms(cur.l).map(rname).join(', ')):'')+' · until '+esc((P[cur.i+cur.n-1]||P[cur.i]).end||'')+'</p>':'')+
+    (next?'<span class="pill">Next'+(tmin(P[next.i].start)>=0?' in '+mins(tmin(P[next.i].start)-now):'')+'</span><h2>'+esc(lTitle(next.l))+(next.cover?' <em>(cover)</em>':'')+'</h2><p>'+esc(P[next.i].label+' · '+(P[next.i].start||'')+' · '+lClassNames(next.l))+(lRooms(next.l).length?' · '+esc(lRooms(next.l).map(rname).join(', ')):'')+'</p>':(cur?'':'<h2>'+(all.length?'No more lessons today':'No lessons today')+'</h2>'))+
+    '<div class="row sp"><small class="muted">'+esc(tname(tid))+'</small><button class="btn sm ghost" data-act="b8-ph-me">Change</button></div></section>';
+  h+='<section class="card"><h2>Today</h2>'+(all.length?all.map(function(x){var p=P[x.i];return '<div class="phmini'+(x===cur?' now':'')+'" style="--h:'+lHue(x.l)+'"><b>'+esc(p.label)+'</b><span>'+esc(p.start||'')+'</span> '+esc(lTitle(x.l))+' · '+esc(lClassNames(x.l))+(lRooms(x.l).length?' · '+esc(lRooms(x.l).map(rname).join(', ')):'')+(x.cover?' <em>cover for '+esc(tname(x.forT))+'</em>':'')+'</div>';}).join(''):'<p class="muted">No lessons on '+esc(day)+'.</p>')+'</section>';
+  if(duties.length)h+='<section class="card"><h2>Duties</h2>'+duties.map(function(d){return '<div class="phmini"><b>'+esc(d.time||'')+'</b> '+esc(d.name)+'</div>';}).join('')+'</section>';
+  return h+phQuickLinks();}
+function phQuickLinks(){return '<section class="card"><div class="phtiles">'+[['timetable','Timetable'],['cover','Cover'],['teachers',word('wTeacher',1)],['print','Print and export']].map(function(t){var ti=TAB_ICON[t[0]]||['info',205];return '<button class="phtile" data-act="tab" data-tab="'+t[0]+'">'+badge(ti[0],ti[1],22)+'<span>'+esc(t[1])+'</span></button>';}).join('')+'</div></section>';}
+/* ---------- quick cover ---------- */
+B7A['b8-ph-absent']=function(){var date=isoToday(),already=coverOf().absences.filter(function(a){return a.date===date;}).map(function(a){return a.teacherId;});
+  phSheet('Who is absent today?','<div class="phchecks">'+D.teachers.slice().sort(function(a,b){return String(a.name).localeCompare(String(b.name));}).map(function(t){return '<label class="phcheck"><input type="checkbox" value="'+t.id+'"'+(already.indexOf(t.id)>=0?' checked disabled':'')+'><span>'+esc(t.name)+'</span></label>';}).join('')+'</div><div class="row phstick"><button class="btn primary" data-act="b8-ph-absok">Save and find cover</button></div>');};
+B7A['b8-ph-absok']=function(){var ids=$$('#phsheet .phchecks input:checked:not(:disabled)').map(function(i){return i.value;}),date=isoToday();if(!ids.length){toast('Tick who is absent');return;}
+  mutate(function(){ids.forEach(function(tid){var a={id:uid(),g:uid(),date:date,teacherId:tid,whole:true,pids:[],subs:{},note:''};coverOf().absences.push(a);});});
+  phSheetClose();B7A['b8-ph-cover']();};
+function phCoverHtml(){var date=isoToday(),rows=coverRows(date),P=D.school.periods;
+  if(!rows.length)return '<p>No lessons need cover today.</p>';
+  return rows.map(function(r){var sub=(r.a.subs||{})[r.x.p.id],sug=coverSuggest(r.a,r.x).slice(0,3),t=sub&&by(D.teachers,sub);
+    return '<div class="phcov'+(sub?' done':'')+'"><div><b>'+esc(P[r.x.i].label)+' · '+esc(lTitle(r.x.l))+'</b><small>'+esc(lClassNames(r.x.l)+(lRooms(r.x.l).length?' · '+lRooms(r.x.l).map(rname).join(', '):'')+' · for '+tname(r.a.teacherId))+'</small></div>'+
+      (sub?'<div class="row"><span class="pill ok">'+esc(tname(sub))+'</span>'+(t&&t.phone?'<button class="btn sm" data-act="b8-ph-wa" data-a="'+r.a.id+'" data-pl="'+r.x.p.id+'">WhatsApp</button>':'')+'<button class="btn sm ghost" data-act="b8-ph-cvset" data-a="'+r.a.id+'" data-pl="'+r.x.p.id+'" data-t="">Change</button></div>':
+       '<div class="row">'+(sug.length?sug.map(function(s){return '<button class="btn sm" data-act="b8-ph-cvset" data-a="'+r.a.id+'" data-pl="'+r.x.p.id+'" data-t="'+s.id+'">'+esc(s.name)+(s.same?' ★':'')+'</button>';}).join(''):'<span class="muted">No free teacher</span>')+'</div>')+'</div>';}).join('')+
+    '<p class="muted">★ teaches the same subject. Suggestions share cover fairly.</p><div class="row phstick"><button class="btn" data-act="b8-ph-share">Share today\'s cover list</button><button class="btn primary" data-act="b8-ph-close">Done</button></div>';}
+B7A['b8-ph-cover']=function(){phSheet('Cover today',phCoverHtml());};
+B7A['b8-ph-cvset']=function(ds){var a=by(coverOf().absences,ds.a);if(!a)return;mutate(function(){var b=by(coverOf().absences,ds.a);b.subs=b.subs||{};if(ds.t)b.subs[ds.pl]=ds.t;else delete b.subs[ds.pl];});phSheet('Cover today',phCoverHtml());};
+B7A['b8-ph-wa']=function(ds){var a=by(coverOf().absences,ds.a),p=by(D.placements,ds.pl),l=p&&lesson(p.lessonId);if(!a||!l)return;var t=by(D.teachers,(a.subs||{})[ds.pl]);if(!t||!t.phone)return;var P=D.school.periods,i=periodIndex(p.pid);
+  var msg='Hello '+t.name+', please cover '+lTitle(l)+' for '+lClassNames(l)+' today, '+P[i].label+' ('+(P[i].start||'')+')'+(lRooms(l).length?' in '+lRooms(l).map(rname).join(', '):'')+', for '+tname(a.teacherId)+'. Thank you. ('+SN()+')';
+  window.open('https://wa.me/'+waNum(t.phone)+'?text='+encodeURIComponent(msg),'_blank');};
+B7A['b8-ph-share']=function(){var date=isoToday(),rows=coverRows(date),P=D.school.periods;if(!rows.length){toast('No cover today');return;}
+  var lines=['*Cover today* ('+new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})+')',''];
+  rows.forEach(function(r){var sub=(r.a.subs||{})[r.x.p.id];lines.push(P[r.x.i].label+' '+(P[r.x.i].start||'')+': '+lTitle(r.x.l)+' '+lClassNames(r.x.l)+(lRooms(r.x.l).length?' ('+lRooms(r.x.l).map(rname).join(', ')+')':'')+' - '+(sub?tname(sub):'NOT COVERED')+' for '+tname(r.a.teacherId));});
+  window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank');};
+/* ---------- sync with the PC over Wi-Fi (phone side) ---------- */
+function phSyncLine(){var p=W.prefs&&W.prefs.lanPair;if(!p)return 'Not set up';return p.last?'Synced '+new Date(p.last).toLocaleString(undefined,{weekday:'short',hour:'2-digit',minute:'2-digit'}):'Not synced yet';}
+B7A['b8-ph-sync']=function(){phSheetClose();var p=(W.prefs&&W.prefs.lanPair)||{};
+  phSheet('Sync with PC','<p>On the PC: open Infinity Timetable, then <b>File → Phones on Wi-Fi</b>. The phone and the PC must be on the same Wi-Fi.</p>'+
+   (window.ITAndroid&&ITAndroid.scanQR?'<button class="btn primary wide" data-act="b8-ph-scan">'+ico('qr',18)+' Scan the code on the PC</button><p class="muted" style="text-align:center">or type them in</p>':'')+
+   '<label class="ff"><span>PC address</span><input class="in" id="ph-host" inputmode="decimal" value="'+esc(p.host||'')+'" placeholder="192.168.1.20"></label><label class="ff"><span>Code</span><input class="in" id="ph-code" inputmode="numeric" maxlength="6" value="'+esc(p.code||'')+'" placeholder="6 digits"></label>'+
+   '<div class="row phstick"><button class="btn primary" data-act="b8-ph-syncgo" data-form="1">Sync now</button></div><p class="muted" id="ph-sync-msg"></p>');};
+B7A['b8-ph-scan']=function(){window.ITScanResult=function(txt){var m=/^ITSYNC1\|([^|]+)\|(\d{6})/.exec(String(txt||''));if(!m){toast('That is not an Infinity Timetable code');return;}var h=$('#ph-host'),c=$('#ph-code');if(h)h.value=m[1];if(c)c.value=m[2];B7A['b8-ph-syncgo']({form:'1'});};try{ITAndroid.scanQR();}catch(e){toast('The camera scanner is not available');}};
+function phFetch(host,code,path,opt){var url='http://'+host+(/:\d+$/.test(host)?'':':47860')+path;opt=opt||{};opt.headers=Object.assign({'X-Sync-Code':code,'X-Device':phDevName()},opt.headers||{});
+  var ctl=window.AbortController?new AbortController():null;if(ctl){opt.signal=ctl.signal;setTimeout(function(){ctl.abort();},opt.timeout||15000);}
+  return fetch(url,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j&&j.error||('The PC answered '+r.status));return j;});});}
+function phDevName(){var m=phMe();return m&&m.kind==='teacher'?tname(m.id)+'\'s phone':m&&m.kind==='admin'?'Deputy head\'s phone':'A phone';}
+function phSyncMsg(t){var e=$('#ph-sync-msg');if(e)e.textContent=t;toast(t);}
+B7A['b8-ph-syncgo']=function(ds){W.prefs=W.prefs||{};var p=W.prefs.lanPair||{};
+  if(ds&&ds.form){var h=($('#ph-host')||{}).value||'',c=($('#ph-code')||{}).value||'';h=h.trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'');c=c.trim();
+    if(!/^[\w.-]+(:\d+)?$/.test(h)){phSyncMsg('Type the PC address shown on the PC, like 192.168.1.20');return;}if(!/^\d{6}$/.test(c)){phSyncMsg('Type the 6-digit code shown on the PC');return;}
+    p={host:h,code:c,last:p.host===h?p.last:0};W.prefs.lanPair=p;saveQuiet();}
+  if(!p.host){B7A['b8-ph-sync']();return;}
+  var base=null;try{base=localStorage.getItem('it.lanbase');}catch(e){}
+  var mine0=null;try{mine0=localStorage.getItem('it.lanmine');}catch(e){}
+  var phKey=function(){try{return JSON.stringify(JSON.parse(fileText()).schools,function(k,v){return k==='updated'||k==='saved'?undefined:v;});}catch(e){return '';}};var changed=!!base&&phKey()!==mine0;
+  phSyncMsg('Connecting to the PC…');var sentAt=Date.now();
+  var step=changed?phFetch(p.host,p.code,'/lan/push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:fileText(),base:base}),timeout:30000}).then(function(){phSyncMsg('Changes sent. Waiting for the PC…');return new Promise(function(r){setTimeout(r,3500);});}):Promise.resolve();
+  step.then(function(){var tries=0;var pull=function(){return phFetch(p.host,p.code,'/lan/pull',{timeout:30000}).then(function(j){if(changed&&j.at<sentAt&&tries++<4)return new Promise(function(r){setTimeout(r,2500);}).then(pull);return j;});};return pull();})
+  .then(function(j){var t;try{t=JSON.parse(j.text);}catch(e){throw new Error('The PC sent something unexpected');}if(!validW(t))throw new Error('The PC sent something unexpected');normW(t);
+    syncActive();var prefs=W.prefs,keep=W.cur,b=null;try{b=base?JSON.parse(base):null;if(b&&validW(b))normW(b);else b=null;}catch(e){b=null;}
+    if(b){var cur=JSON.parse(JSON.stringify(W)),res=mergeW(b,cur,t);W=res.w;}else{W=t;}
+    W.prefs=prefs;W.cur=keep;if(!curSchool()||!curTT()){var s0=W.schools[0];W.cur={s:s0.id,t:s0.tts[0].id};}D=curTT().data;undoS.length=0;redoS.length=0;
+    try{localStorage.setItem('it.lanbase',j.text);localStorage.setItem('it.lanmine',phKey());}catch(e){}
+    W.prefs.lanPair.last=Date.now();saveQuiet();phSheetClose();render();toast('Synced with the PC'+(changed?' (your changes were sent)':''));})
+  .catch(function(e){phSyncMsg(e&&e.name==='AbortError'?'The PC did not answer. Check that phone sync is on and both are on the same Wi-Fi.':(e&&e.message&&/Failed to fetch|NetworkError|Load failed/i.test(e.message)?'Could not reach the PC. Check the address, that phone sync is on, and that both are on the same Wi-Fi.':(e&&e.message)||'Sync failed'));});};
+/* ---------- hook into the app ---------- */
+var _phRenderTT=renderTimetable;renderTimetable=function(){return isPhone()&&!isSpecial()?phTimetable():_phRenderTT();};
+var _phRenderHome=renderHome;renderHome=function(){return isPhone()&&!isSpecial()?phMyDay():_phRenderHome();};
+var _phRender=render;render=function(){document.body.classList.toggle('phone',isPhone());_phRender();phChrome();};
+LOCK_OK['b8-ph-file']=1;LOCK_OK['b8-ph-todo']=0;
+var _phPaint=paintHints;paintHints=function(){_phPaint();phHold();};
+window.addEventListener('resize',function(){var on=isPhone();if(on!==document.body.classList.contains('phone'))render();});
+/* "Show … timetable" from a lesson opens that timetable in the day view */
+(function(){var f=B7A['b4-cm-show'];if(!f)return;B7A['b4-cm-show']=function(ds){var r=f.apply(this,arguments);if(isPhone()&&ds&&ds.kind&&ds.id){var s=phState();s.kind=ds.kind;s.id=ds.id;ui.tab='timetable';render();}return r;};})();
 
 /* ---------- chrome ---------- */
 function counts(){var req=0;D.lessons.forEach(function(l){req+=(l.perWeek||0);});return {req:req,placed:D.placements.length};}

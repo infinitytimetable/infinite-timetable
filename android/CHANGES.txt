@@ -1,3 +1,4 @@
 Infinity Timetable for Android
 
+2.4.0 - phone layout: My day, one day at a time, tap a lesson to move it, quick cover with WhatsApp, sync with the school PC over Wi-Fi (scan its code), viewer mode.
 2.3.0 - first Android release: the full timetable app, offline, with save/share, printing and the Back button.

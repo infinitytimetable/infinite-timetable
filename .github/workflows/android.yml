@@ -3,7 +3,7 @@ name: Build Android app
 on:
   push:
     branches: [main]
-    paths: ['android/**', '.github/workflows/android.yml']
+    paths: ['android/**', '.github/workflows/android.yml', 'latest.json']
   workflow_dispatch:
 
 permissions:
@@ -69,8 +69,16 @@ jobs:
           if ! gh release view android >/dev/null 2>&1; then
             gh release create android --target "$GITHUB_SHA" --title "Infinity Timetable for Android $V" --notes "$NOTES" --latest=false
           fi
-          gh release upload android InfinityTimetable.apk "InfinityTimetable-$V.apk" --clobber
-          gh release edit android --title "Infinity Timetable for Android $V" --notes "$NOTES"
+          # The main download link (InfinityTimetable.apk) only changes once latest.json announces this version.
+          # Until then the build is uploaded as InfinityTimetable-<version>.apk for checking.
+          PUB=$(jq -r '.android.version // ""' latest.json)
+          if [ "$PUB" = "$V" ]; then
+            gh release upload android InfinityTimetable.apk "InfinityTimetable-$V.apk" --clobber
+            gh release edit android --title "Infinity Timetable for Android $V" --notes "$NOTES"
+          else
+            gh release upload android "InfinityTimetable-$V.apk" --clobber
+            echo "Test build $V uploaded; the public download stays at $PUB"
+          fi
 
       - name: Report back
         if: always()

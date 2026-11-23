@@ -15,7 +15,8 @@ if (process.platform === 'win32') app.setAppUserModelId(AUMID);
 const argv = process.argv.slice(app.isPackaged ? 1 : 2);
 const FLAG = f => argv.includes(f);
 const isKeygen = FLAG('--keygen');
-if (!FLAG('--uninstall') && !app.requestSingleInstanceLock({ keygen: isKeygen })) { app.quit(); }
+// The updater (--update) runs while the old copy is still closing, so it must not be stopped by the single-instance lock.
+if (!FLAG('--uninstall') && !FLAG('--update') && !app.requestSingleInstanceLock({ keygen: isKeygen })) { app.quit(); }
 
 /* ---------- places ---------- */
 const LAD = () => process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
@@ -91,6 +92,7 @@ async function install(quiet) {
     await registerWindows(exe);
     setCfg({ installedAt: new Date().toISOString() });
     if (!quiet) await dialog.showMessageBox({ type: 'info', title: NAME, message: `${NAME} ${VERSION} is installed.`, detail: 'You will find it on your desktop and in the Start menu, and .stt school files open in it. You can delete the folder you downloaded.' });
+    try { app.releaseSingleInstanceLock(); } catch (e) {}
     spawn(exe, [], { detached: true, stdio: 'ignore' }).unref(); app.exit(0); return true;
   } catch (e) { dialog.showErrorBox(NAME, 'Could not install: ' + e.message + '\n\nClose Infinity Timetable if it is open, then try again.'); return false; }
 }

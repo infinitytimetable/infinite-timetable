@@ -26,6 +26,11 @@ import android.widget.Toast;
 
 import androidx.core.content.FileProvider;
 import androidx.webkit.WebViewAssetLoader;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -70,6 +75,8 @@ public class MainActivity extends Activity {
         s.setDisplayZoomControls(false);
         s.setTextZoom(100);
         s.setSupportMultipleWindows(false);
+        // Sync with the school PC over Wi-Fi: the page is https, the PC is plain http on the local network
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
         web.addJavascriptInterface(new Bridge(), "ITAndroid");
 
@@ -133,9 +140,33 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void scanQR() {
+            runOnUiThread(() -> doScan());
+        }
+
+        @JavascriptInterface
         public void exit() {
             runOnUiThread(() -> finishAndRemoveTask());
         }
+    }
+
+    void doScan() {
+        try {
+            GmsBarcodeScannerOptions o = new GmsBarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE).build();
+            GmsBarcodeScanner sc = GmsBarcodeScanning.getClient(this, o);
+            sc.startScan()
+                    .addOnSuccessListener(b -> sendScan(b.getRawValue()))
+                    .addOnFailureListener(e -> Toast.makeText(this, "The scanner is not available on this phone. Type the address and code instead.", Toast.LENGTH_LONG).show());
+        } catch (Throwable t) {
+            Toast.makeText(this, "The scanner is not available on this phone. Type the address and code instead.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    void sendScan(String txt) {
+        if (txt == null) return;
+        String js = "window.ITScanResult&&window.ITScanResult(" + JSONObject.quote(txt) + ")";
+        web.evaluateJavascript(js, null);
     }
 
     void askSaveOrShare(final String name, final String mime, final byte[] bytes) {
