@@ -1,0 +1,27 @@
+INFINITY TIMETABLE __VER__ - WINDOWS PROGRAM (Windows 10 / 11, 64-bit)
+====================================================================
+
+EASIEST: use InfinityTimetable-Setup-__VER__.exe (needs the internet) or this zip (works offline).
+
+FROM THIS ZIP
+1. Right-click the zip and choose "Extract All...".
+2. Open the folder "Infinity Timetable" and double-click "Infinity Timetable.exe".
+   If Windows shows "Windows protected your PC", click "More info" and then "Run anyway".
+   (This appears because the program is not signed with a paid certificate.)
+3. Click "Install". It copies itself to this computer, adds icons to the desktop and Start menu,
+   and .stt school files open in it. You can then delete the zip and the extracted folder.
+
+UPDATING FROM AN OLDER VERSION
+- Version 2.4 and later: Settings > Updates > Check now, then "Update now". Your work is kept.
+- Versions 2.1 to 2.3 (the older program that opened in an Edge window) update the same way, or
+  run this zip as above and click "Update". Work you had not saved to a .stt file is copied
+  into the new program automatically the first time it opens.
+
+WHERE YOUR WORK IS
+- Your .stt school files stay wherever you saved them.
+- Automatic backups: Documents\Infinity Timetable\Backups (one per school file per day, last 30 kept).
+  File > Restore a backup... opens any of them.
+
+PHONES
+- File > Phones on Wi-Fi... lets the Android app copy the timetable over the school Wi-Fi
+  and send back quick changes. The first time, allow Infinity Timetable on private networks.

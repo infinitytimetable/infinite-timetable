@@ -1,0 +1,104 @@
+name: Build Windows program
+
+on:
+  push:
+    branches: [main]
+    paths: ['windows/**', '.github/workflows/windows.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows
+  cancel-in-progress: true
+
+env:
+  EL_VER: 33.2.1
+  EL_SHA: c325a6d905c67107e166267813ea2151ae7fd316c0a88de0081db0b9851a9946
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Get Electron
+        run: |
+          set -o pipefail
+          curl -fsSL -o electron.zip "https://github.com/electron/electron/releases/download/v$EL_VER/electron-v$EL_VER-win32-x64.zip"
+          echo "$EL_SHA  electron.zip" | sha256sum -c - | tee -a build.log
+
+      - name: Put the program together
+        run: |
+          set -eo pipefail
+          V=$(tr -d '[:space:]' < windows/VERSION)
+          echo "V=$V" >> "$GITHUB_ENV"
+          grep -q "APP_VERSION='$V'" windows/app/index.html || { echo "windows/app/index.html is not version $V" | tee -a build.log; exit 1; }
+          D="build/Infinity Timetable"; mkdir -p "$D"
+          unzip -q electron.zip -d "$D"
+          mv "$D/electron.exe" "$D/Infinity Timetable.exe"
+          rm -f "$D/resources/default_app.asar"
+          find "$D/locales" -type f ! -name 'en-US.pak' ! -name 'en-GB.pak' -delete
+          mkdir -p "$D/resources/app"
+          cp windows/app/main.js windows/app/icon.png windows/app/icon.ico windows/app/index.html "$D/resources/app/"
+          printf '{\n "name": "infinity-timetable",\n "productName": "Infinity Timetable",\n "version": "%s",\n "description": "Infinity Timetable school timetables",\n "author": "Infinity Timetable",\n "main": "main.js"\n}\n' "$V" > "$D/resources/app/package.json"
+          node --check "$D/resources/app/main.js"
+          sed "s/__VER__/$V/g; s/\$/\r/" windows/READ-ME-FIRST.txt > "$D/READ ME FIRST.txt"
+          npm i --no-save --no-audit --no-fund resedit@1.7.2 2>&1 | tee -a build.log
+          node windows/tools/seticon.js "$D/Infinity Timetable.exe" windows/app/icon.ico "$V" 2>&1 | tee -a build.log
+          mkdir -p out
+          (cd build && zip -r -9 -q "../out/InfinityTimetable-$V-Windows.zip" "Infinity Timetable")
+          cp "out/InfinityTimetable-$V-Windows.zip" out/InfinityTimetable-Windows.zip
+          ls -l out | tee -a build.log
+
+      - name: Build the setup program
+        run: |
+          set -eo pipefail
+          cd windows/setup
+          python3 mksyso.py icon.png rsrc_windows_amd64.syso "$V" 2>&1 | tee -a ../../build.log
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.Version=$V" -o "../../out/InfinityTimetable-Setup-$V.exe" . 2>&1 | tee -a ../../build.log
+          ls -l ../../out | tee -a ../../build.log
+
+      - name: Publish the downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="Infinity Timetable $V for Windows 10 and 11 (64-bit).
+
+          InfinityTimetable-Setup-$V.exe: small setup that downloads and installs the program (needs the internet).
+          InfinityTimetable-$V-Windows.zip: the whole program (works offline). Extract it and run Infinity Timetable.exe.
+          Updating keeps all your timetables and settings."
+          if ! gh release view windows >/dev/null 2>&1; then
+            gh release create windows --target "$GITHUB_SHA" --title "Infinity Timetable for Windows $V" --notes "$NOTES" --latest=false
+          fi
+          gh release upload windows out/* --clobber
+          gh release edit windows --title "Infinity Timetable for Windows $V" --notes "$NOTES"
+
+      - name: Report back
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/report && cd /tmp/report
+          git init -q && git checkout -q -b ci-logs-windows
+          git config user.name "Infinity Timetable build"
+          git config user.email "infinitytimetable@users.noreply.github.com"
+          {
+            echo "status: ${{ job.status }}"
+            echo "version: ${V:-unknown}"
+            echo "commit: $GITHUB_SHA"
+            echo "time: $(date -u)"
+            ls -l "$GITHUB_WORKSPACE/out" 2>/dev/null | sed 's/^/file: /'
+          } > windows-status.txt
+          if [ -f "$GITHUB_WORKSPACE/build.log" ]; then tail -n 300 "$GITHUB_WORKSPACE/build.log" > windows-build-log.txt; fi
+          git add -A && git commit -q -m "Windows build report: ${{ job.status }}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ci-logs-windows
