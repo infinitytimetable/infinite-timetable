@@ -63,6 +63,7 @@ jobs:
       - name: Build the setup program
         run: |
           set -eo pipefail
+          python3 -m pip install --quiet pillow 2>&1 | tail -1 | tee -a build.log
           cd windows/setup
           python3 mksyso.py icon.png rsrc_windows_amd64.syso "$V" 2>&1 | tee -a ../../build.log
           GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.Version=$V" -o "../../out/InfinityTimetable-Setup-$V.exe" . 2>&1 | tee -a ../../build.log
