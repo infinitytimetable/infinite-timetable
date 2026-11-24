@@ -211,7 +211,7 @@ textarea.in{min-height:140px;resize:vertical;line-height:1.45}
 <script>
 'use strict';
 /* ===== Exam Display: shows the exam details on the classroom board ===== */
-var VERSION='1.2.0';
+var VERSION='1.3.0';
 /* ---------- Cambridge subjects and syllabus codes (editable in Settings > Subjects) ---------- */
 var CAMBRIDGE=[
  ['IGCSE','0452','Accounting'],['IGCSE','0606','Additional Mathematics'],['IGCSE','0400','Art and Design'],['IGCSE','0610','Biology'],['IGCSE','0450','Business Studies'],
@@ -226,8 +226,15 @@ var CAMBRIDGE=[
  ['AS & A Level','9231','Further Mathematics'],['AS & A Level','9696','Geography'],['AS & A Level','9239','Global Perspectives and Research'],['AS & A Level','9489','History'],['AS & A Level','9626','Information Technology'],
  ['AS & A Level','9084','Law'],['AS & A Level','9709','Mathematics'],['AS & A Level','9483','Music'],['AS & A Level','9396','Physical Education'],['AS & A Level','9702','Physics'],
  ['AS & A Level','9990','Psychology'],['AS & A Level','9699','Sociology'],['AS & A Level','9395','Travel and Tourism'],['AS & A Level','9607','Media Studies'],['AS & A Level','9693','Marine Science'],
- ['AS & A Level','9488','Islamic Studies'],['AS & A Level','8021','English General Paper'],['AS & A Level','9274','Classical Studies'],['AS & A Level','9631','Design and Textiles']
+ ['AS & A Level','9488','Islamic Studies'],['AS & A Level','8021','English General Paper'],['AS & A Level','9274','Classical Studies'],['AS & A Level','9631','Design and Textiles'],
+ ['Primary Checkpoint','0058','English'],['Primary Checkpoint','0057','English as a Second Language'],['Primary Checkpoint','0096','Mathematics'],['Primary Checkpoint','0097','Science'],['Primary Checkpoint','0838','Global Perspectives'],
+ ['Lower Secondary Checkpoint','0861','English'],['Lower Secondary Checkpoint','0876','English as a Second Language'],['Lower Secondary Checkpoint','0862','Mathematics'],['Lower Secondary Checkpoint','0893','Science'],['Lower Secondary Checkpoint','1129','Global Perspectives']
 ];
+/* Checkpoint papers: component code -> [paper line, minutes] (Cambridge Guide to Making Entries, October 2026). Filled in automatically when chosen. */
+var COMPONENTS={'Primary Checkpoint|0057':{'01':['Reading and Use of English',35],'02':['Listening',25],'03':['Writing',35]},'Primary Checkpoint|0058':{'01':['Paper 1 – Non-Fiction',60],'02':['Paper 2 – Fiction',60]},
+ 'Primary Checkpoint|0096':{'01':['Paper 1 (non-calculator)',45],'02':['Paper 2 (calculator)',45]},'Primary Checkpoint|0097':{'01':['Paper 1',35],'02':['Paper 2',35]},
+ 'Lower Secondary Checkpoint|0876':{'01':['Reading and Use of English',45],'02':['Listening',35],'03':['Writing',40]},'Lower Secondary Checkpoint|0861':{'01':['Paper 1',70],'02':['Paper 2',70]},
+ 'Lower Secondary Checkpoint|0862':{'01':['Paper 1 (non-calculator)',60],'02':['Paper 2 (calculator)',60]},'Lower Secondary Checkpoint|0893':{'01':['Paper 1',45],'02':['Paper 2',45]}};
 /* ---------- colour designs ---------- */
 var THEMES=[
  {id:'midnight',name:'Midnight',d:1,bg:'#0d1b33',glow1:'#1d3a6e',glow2:'#162d57',panel:'linear-gradient(170deg,rgba(255,255,255,.08),rgba(255,255,255,.025))',fg:'#f4f7fb',muted:'#9fb0cc',acc:'#60a5fa'},
@@ -251,6 +258,7 @@ var KEY='examdisplay.v1',S;
 function load(){try{S=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){S=null;}
   if(!S||typeof S!=='object')S={};S.school=S.school||'';S.centre=S.centre||'';S.room=S.room||'';S.logo=S.logo||'';S.cam=S.cam||'';S.rules=S.rules==null?RULES_DEF:S.rules;
   S.subjects=Array.isArray(S.subjects)&&S.subjects.length?S.subjects:CAMBRIDGE.map(function(x,i){return {id:'c'+i,level:x[0],code:x[1],name:x[2]};});
+  if((S.subjectsVer||1)<2){var have={};S.subjects.forEach(function(x){have[x.level+'|'+x.code]=1;});CAMBRIDGE.forEach(function(x,i){if(!have[x[0]+'|'+x[1]])S.subjects.push({id:'c'+i,level:x[0],code:x[1],name:x[2]});});S.subjectsVer=2;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
   S.papers=Array.isArray(S.papers)?S.papers:[];
   var L=S.look=S.look||{};L.theme=L.theme||'midnight';L.font=L.font||'ED Inter';L.num=L.num||'same';L.layout=L.layout||'panels';
   ['secs','date','rules','level','centreNo','logoBg'].forEach(function(k){if(L[k]==null)L[k]=k!=='logoBg';});if(S.showRules===false){L.rules=false;}delete S.showRules;
@@ -270,7 +278,8 @@ function status(p,now){var t=times(p);if(!t)return {k:'wait',t:null};if(now<t.st
 function dur(ms){ms=Math.max(0,Math.round(ms/1000));var h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return (h?h+':'+pad(m):m)+':'+pad(s);}
 function code(p){return p.code+(p.comp?'/'+p.comp:'');}
 function todays(){var d=todayISO();return S.papers.filter(function(p){return p.date===d;}).sort(function(a,b){return String(a.start).localeCompare(String(b.start));});}
-function paperLine(comp){var m=/^(\d)/.exec(String(comp||''));return m?'Paper '+m[1]:'';}
+function paperLine(comp){var c=String(comp||''),m=/^0(\d)$/.exec(c)||/^(\d)/.exec(c);return m&&m[1]!=='0'?'Paper '+m[1]:'';}
+function compInfo(){if(!ED)return null;var t=COMPONENTS[ED.level+'|'+ED.code];return t&&t[ED.comp]||null;}
 /* ---------- colours ---------- */
 function hex2rgb(h){h=String(h||'').replace('#','');if(h.length===3)h=h.split('').map(function(c){return c+c;}).join('');var n=parseInt(h,16);return isNaN(n)?[0,0,0]:[n>>16&255,n>>8&255,n&255];}
 function lum(h){var c=hex2rgb(h).map(function(v){v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);});return .2126*c[0]+.7152*c[1]+.0722*c[2];}
@@ -398,13 +407,16 @@ function openPaper(p,copy){ED=p?JSON.parse(JSON.stringify(p)):{id:uid(),date:tod
    '<div class="grid"><label class="f">Level<select class="in" data-e="levelf"><option value="">All levels</option>'+levels.map(function(l){return '<option'+(l===ED.level?' selected':'')+'>'+esc(l)+'</option>';}).join('')+'</select></label>'+
    '<label class="f">Subject<select class="in" data-e="subject"></select></label></div>'+
    '<div class="grid" style="margin-top:12px"><label class="f">Subject name on the board<input class="in" data-e="name" value="'+esc(ED.name)+'"></label><label class="f">Syllabus code<input class="in" data-e="code" value="'+esc(ED.code)+'" inputmode="numeric"></label>'+
-   '<label class="f">Component (paper) code<input class="in" data-e="comp" value="'+esc(ED.comp)+'" placeholder="e.g. 42" inputmode="numeric"><div class="sugg">'+['11','12','13','21','22','23','31','32','33','41','42','43','51','52','61','62'].map(function(c){return '<button type="button" data-act="comp" data-v="'+c+'">'+c+'</button>';}).join('')+'</div></label></div>'+
+   '<label class="f">Component (paper) code<input class="in" data-e="comp" value="'+esc(ED.comp)+'" placeholder="e.g. 42" inputmode="numeric"><div class="sugg" id="compchips"></div></label></div>'+
    '<label class="f" style="margin-top:12px">Paper line under the subject<input class="in" data-e="line" value="'+esc(ED.line)+'" placeholder="e.g. Paper 1 – Multiple Choice"><div class="sugg">'+['Paper 1','Paper 2','Paper 3','Paper 4','Paper 5','Paper 6','Multiple Choice (Core)','Multiple Choice (Extended)','Theory (Core)','Theory (Extended)','Practical Test','Alternative to Practical'].map(function(c){return '<button type="button" data-act="line" data-v="'+c+'">'+c+'</button>';}).join('')+'</div></label>'+
    '<div class="grid" style="margin-top:12px"><label class="f">Duration (minutes)<input class="in" type="number" min="5" max="600" step="5" data-e="dur" value="'+esc(ED.dur)+'"><div class="sugg">'+[45,60,75,90,105,120,135,150,180].map(function(m){return '<button type="button" data-act="dur" data-v="'+m+'">'+m+'</button>';}).join('')+'</div></label>'+
    '<label class="f">Start time<input class="in" type="time" data-e="start" value="'+esc(ED.start)+'"></label><label class="f">Date<input class="in" type="date" data-e="date" value="'+esc(ED.date)+'"></label></div>'+
    '<div class="calc" id="calc" style="margin-top:14px"></div>'+
    '<div class="row" style="justify-content:flex-end;margin-top:18px"><button class="btn" data-act="cancel">Cancel</button><button class="btn pri" data-act="savepaper">Save</button></div></div>';
-  $('#dlg').hidden=false;fillSubjects();calc();}
+  $('#dlg').hidden=false;fillSubjects();compChips();calc();}
+function compChips(){var el=$('#compchips');if(!el)return;var t=COMPONENTS[ED.level+'|'+ED.code];
+  el.innerHTML=t?Object.keys(t).map(function(c){return '<button type="button" data-act="comp" data-v="'+c+'">'+c+' '+esc(t[c][0])+'</button>';}).join(''):['11','12','13','21','22','23','31','32','33','41','42','43','51','52','61','62'].map(function(c){return '<button type="button" data-act="comp" data-v="'+c+'">'+c+'</button>';}).join('');}
+function applyComp(){var ci=compInfo();if(!ci)return false;$('[data-e=line]').value=ci[0];$('[data-e=dur]').value=ci[1];return true;}
 function fillSubjects(){var lf=$('[data-e=levelf]').value,sel=$('[data-e=subject]');
   var list=S.subjects.filter(function(s){return !lf||s.level===lf;}).slice().sort(function(a,b){return a.name.localeCompare(b.name);});
   var cur=S.subjects.filter(function(s){return s.code===ED.code&&s.level===ED.level;})[0];
@@ -432,7 +444,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-act]
   else if(a==='addsub'){S.subjects.unshift({id:uid(),level:'IGCSE',code:'',name:'New subject'});save();$('#subrows').innerHTML=subRows('');var f=$('#subrows [data-s=name]');if(f){f.focus();f.select();}}
   else if(a==='delsub'){var tr=b.closest('tr');S.subjects=S.subjects.filter(function(s){return s.id!==tr.dataset.id;});save();tr.remove();}
   else if(a==='resetsubs'){if(confirm('Replace your subject list with the standard Cambridge list? Changes you made to the list will be lost.')){S.subjects=CAMBRIDGE.map(function(x,i){return {id:'c'+i,level:x[0],code:x[1],name:x[2]};});save();drawTab();}}
-  else if(a==='comp'){$('[data-e=comp]').value=b.dataset.v;autoLine(b.dataset.v);readEd();calc();}
+  else if(a==='comp'){$('[data-e=comp]').value=b.dataset.v;readEd();if(!applyComp())autoLine(b.dataset.v);readEd();calc();}
   else if(a==='line'){var li=$('[data-e=line]'),v=b.dataset.v,cur=li.value.trim(),pm=/^Paper \d/.exec(cur);
     if(/^Paper \d$/.test(v))li.value=pm?v+cur.slice(pm[0].length):(cur?v+' – '+cur:v);else li.value=pm?pm[0]+' – '+v:v;readEd();}
   else if(a==='dur'){$('[data-e=dur]').value=b.dataset.v;readEd();calc();}
@@ -445,13 +457,13 @@ document.addEventListener('change',function(e){var t=e.target;
   if(t.dataset.l){S.look[t.dataset.l]=t.checked;save();if(tab==='look')drawPreview();return;}
   if(t.dataset.c){S.look.custom[t.dataset.c]=t.value;save();var y=scrollY;drawTab();scrollTo(0,y);return;}
   if(t.dataset.e==='levelf'){fillSubjects();return;}
-  if(t.dataset.e==='subject'){var s=S.subjects.filter(function(x){return x.id===t.value;})[0];if(s){ED.level=s.level;$('[data-e=name]').value=s.name;$('[data-e=code]').value=s.code;readEd();calc();}return;}
+  if(t.dataset.e==='subject'){var s=S.subjects.filter(function(x){return x.id===t.value;})[0];if(s){ED.level=s.level;$('[data-e=name]').value=s.name;$('[data-e=code]').value=s.code;readEd();compChips();if(applyComp())readEd();calc();}return;}
   if(t.dataset.e){readEd();calc();}});
 document.addEventListener('input',function(e){var t=e.target;
   if(t.dataset.f&&['school','centre','room','rules'].indexOf(t.dataset.f)>=0){S[t.dataset.f]=t.value;save();}
   else if(t.dataset.f==='sq'){$('#subrows').innerHTML=subRows(t.value);}
   else if(t.dataset.s){var tr=t.closest('tr'),s=S.subjects.filter(function(x){return x.id===tr.dataset.id;})[0];if(s){s[t.dataset.s]=t.value;save();}}
-  else if(t.dataset.e&&ED){if(t.dataset.e==='comp')autoLine(t.value);readEd();calc();}});
+  else if(t.dataset.e&&ED){if(t.dataset.e==='comp'){ED.comp=t.value.trim();if(!applyComp())autoLine(t.value);}readEd();if(t.dataset.e==='code')compChips();calc();}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(!$('#dlg').hidden){$('#dlg').hidden=true;ED=null;}else if(view==='board'){if($('#bmenu').classList.contains('open'))$('#bmenu').classList.remove('open');else showSetup();}}});
 /* logos are kept up to 900 px so they stay sharp on a 4K board */
 function shrink(url,cb){var im=new Image();im.onload=function(){var m=900,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);var x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(im,0,0,c.width,c.height);var u=c.toDataURL('image/png');if(u.length>1400000)u=c.toDataURL('image/webp',.92);if(u.length>1400000||u.indexOf('data:image/webp')<0&&u.length>1400000)u=c.toDataURL('image/jpeg',.9);cb(u);};im.onerror=function(){toast('That picture could not be opened');};im.src=url;}
