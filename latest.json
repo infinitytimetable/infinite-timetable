@@ -1,14 +1,14 @@
 {
-  "version": "2.4.0",
-  "name": "Infinity Timetable 2.4.0",
-  "setup": "InfinityTimetable-Setup-2.4.0.exe",
-  "notes": "What's new in 2.4.0\n- New Windows program with its own window, installed like normal software (Start menu, desktop icon, opens .stt files)\n- Automatic daily backups, with File > Restore a backup\n- Phones on Wi-Fi: the Android app copies the timetable from the PC and sends back quick changes (File > Phones on Wi-Fi)\n- Phone layout: My day, one day at a time, tap a lesson to move it to the best place, quick cover with WhatsApp, viewer mode\n- Holding bay (from 2.3.0): park lessons while you rearrange\n\nUpdating keeps all your timetables, settings and your licence. The update downloads about 105 MB.",
+  "version": "2.5.0",
+  "name": "Infinity Timetable 2.5.0",
+  "setup": "InfinityTimetable-Setup-2.5.0.exe",
+  "notes": "What's new in 2.5.0\n- New Glass 3D look in your school colours: frosted panels, raised lesson cards that lift when you point at them\n- 3D week: see any class, teacher or room as a 3D board you can turn, zoom and spin (Timetable > 3D week)\n- Motion switch in Settings > Appearance: smooth, or off for slow computers\n- Printouts and ID cards are unchanged\n\nAlso in 2.4: the new Windows program with daily backups, phones on Wi-Fi, and the phone layout with My day and quick cover.\n\nUpdating keeps all your timetables, settings and your licence.",
   "android": {
-    "version": "2.4.0",
+    "version": "2.5.0",
     "apk": "https://github.com/infinitytimetable/infinite-timetable/releases/download/android/InfinityTimetable.apk"
   },
   "windows": {
-    "version": "2.4.0",
-    "zip": "https://github.com/infinitytimetable/infinite-timetable/releases/download/windows/InfinityTimetable-2.4.0-Windows.zip"
+    "version": "2.5.0",
+    "zip": "https://github.com/infinitytimetable/infinite-timetable/releases/download/windows/InfinityTimetable-2.5.0-Windows.zip"
   }
 }
