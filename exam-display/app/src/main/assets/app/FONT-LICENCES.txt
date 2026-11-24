@@ -1,0 +1,4 @@
+Fonts bundled in Exam Display (subset to Latin characters):
+- Inter, Poppins, Lora, Carlito, Liberation Sans: SIL Open Font License 1.1 (https://openfontlicense.org)
+- Caladea: Apache License 2.0
+- DejaVu Sans Mono: Bitstream Vera Fonts licence (free to use and embed)
