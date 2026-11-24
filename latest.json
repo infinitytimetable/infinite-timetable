@@ -1,10 +1,14 @@
 {
-  "version": "2.2.1",
-  "name": "Infinity Timetable 2.2.1",
-  "setup": "InfinityTimetable-Setup-2.2.1.exe",
-  "notes": "What's new in 2.2.1\n- Master timetable: every subject code reads in full at Fit zoom; on phones it scrolls sideways\n- ID cards: the code never covers details; long roles and names wrap instead of being cut\n- ID cards: new Support staff list (bursar, secretary, drivers, guards)\n- Staff cards show job title, department and subjects, and staff number\n- Learner cards show class, section and ID; date of birth and house or bus are optional\n- The back always fits: return details, signature and valid until\n\nUpdating keeps all your timetables, settings and your licence.",
+  "version": "2.4.0",
+  "name": "Infinity Timetable 2.4.0",
+  "setup": "InfinityTimetable-Setup-2.4.0.exe",
+  "notes": "What's new in 2.4.0\n- New Windows program with its own window, installed like normal software (Start menu, desktop icon, opens .stt files)\n- Automatic daily backups, with File > Restore a backup\n- Phones on Wi-Fi: the Android app copies the timetable from the PC and sends back quick changes (File > Phones on Wi-Fi)\n- Phone layout: My day, one day at a time, tap a lesson to move it to the best place, quick cover with WhatsApp, viewer mode\n- Holding bay (from 2.3.0): park lessons while you rearrange\n\nUpdating keeps all your timetables, settings and your licence. The update downloads about 105 MB.",
   "android": {
-    "version": "2.3.0",
+    "version": "2.4.0",
     "apk": "https://github.com/infinitytimetable/infinite-timetable/releases/download/android/InfinityTimetable.apk"
+  },
+  "windows": {
+    "version": "2.4.0",
+    "zip": "https://github.com/infinitytimetable/infinite-timetable/releases/download/windows/InfinityTimetable-2.4.0-Windows.zip"
   }
 }
