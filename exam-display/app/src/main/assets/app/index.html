@@ -18,7 +18,8 @@ button,input,select,textarea{font:inherit}
 .bd .num{font-family:var(--num);font-variant-numeric:tabular-nums lining-nums}
 .bhead{display:flex;align-items:center;gap:calc(var(--u)*1.3);flex:none}
 .blogo{height:calc(var(--u)*6.6);max-width:calc(var(--u)*14);object-fit:contain;border-radius:calc(var(--u)*.6);flex:none}
-.blogo.pad{background:#fff;padding:calc(var(--u)*.35)}
+.blogo.pad{background:#fff;padding:calc(var(--u)*.45)}
+.blogo.wide{max-width:calc(var(--u)*30);height:calc(var(--u)*5.6)}
 .bschool{flex:1;min-width:0}
 .bschool h1{margin:0;font-size:calc(var(--u)*2.6);line-height:1.12;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
 .bschool p{margin:calc(var(--u)*.35) 0 0;font-size:calc(var(--u)*1.45);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -99,7 +100,7 @@ button,input,select,textarea{font:inherit}
 /* layout: clock at the side */
 .bside{flex:none;width:calc(var(--u)*30);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--u)*1.6);text-align:center;border-radius:calc(var(--u)*1.4);background:var(--panel);border:calc(var(--u)*.14) solid var(--line);box-shadow:var(--shadow);padding:calc(var(--u)*2)}
 .bside .logos{display:flex;gap:calc(var(--u)*1.2);align-items:center;justify-content:center;flex-wrap:wrap}
-.bside .blogo{height:calc(var(--u)*8);max-width:calc(var(--u)*12)}
+.bside .blogo{height:calc(var(--u)*11);max-width:calc(var(--u)*12.5)}
 .bside h1{margin:0;font-size:calc(var(--u)*2.3);font-weight:800;line-height:1.15}
 .bside p{margin:0;color:var(--muted);font-size:calc(var(--u)*1.4)}
 .bside .t{font-weight:800;font-size:calc(var(--u)*8.4);line-height:1;letter-spacing:-.03em}
@@ -208,10 +209,11 @@ textarea.in{min-height:140px;resize:vertical;line-height:1.45}
 <div id="setup"></div>
 <div id="dlg" hidden></div>
 <div id="toast" hidden></div>
+<script src="logos.js"></script>
 <script>
 'use strict';
 /* ===== Exam Display: shows the exam details on the classroom board ===== */
-var VERSION='1.3.0';
+var VERSION='1.4.0';
 /* ---------- Cambridge subjects and syllabus codes (editable in Settings > Subjects) ---------- */
 var CAMBRIDGE=[
  ['IGCSE','0452','Accounting'],['IGCSE','0606','Additional Mathematics'],['IGCSE','0400','Art and Design'],['IGCSE','0610','Biology'],['IGCSE','0450','Business Studies'],
@@ -256,12 +258,14 @@ var LAYOUTS=[['panels','Panels','Each paper in its own card with all details and
 var RULES_DEF='Switch off and hand in all mobile phones and smart watches\nNo talking once you enter the exam room\nWrite your centre number, candidate number and name on every page\nRaise your hand if you need help or more paper\nDo not leave the room without permission';
 var KEY='examdisplay.v1',S;
 function load(){try{S=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){S=null;}
-  if(!S||typeof S!=='object')S={};S.school=S.school||'';S.centre=S.centre||'';S.room=S.room||'';S.logo=S.logo||'';S.cam=S.cam||'';S.rules=S.rules==null?RULES_DEF:S.rules;
+  var fresh=!S||typeof S!=='object';if(fresh)S={school:'Lusaka Oaktree School',logo:'builtin:school',cam:'builtin:camWide'};
+  if(!S.logosV){if(!S.school)S.school='Lusaka Oaktree School';if(!S.logo)S.logo='builtin:school';if(!S.cam)S.cam='builtin:camWide';S.logosV=1;}
+  S.school=S.school||'';S.centre=S.centre||'';S.room=S.room||'';S.logo=S.logo||'';S.cam=S.cam||'';S.rules=S.rules==null?RULES_DEF:S.rules;
   S.subjects=Array.isArray(S.subjects)&&S.subjects.length?S.subjects:CAMBRIDGE.map(function(x,i){return {id:'c'+i,level:x[0],code:x[1],name:x[2]};});
   if((S.subjectsVer||1)<2){var have={};S.subjects.forEach(function(x){have[x.level+'|'+x.code]=1;});CAMBRIDGE.forEach(function(x,i){if(!have[x[0]+'|'+x[1]])S.subjects.push({id:'c'+i,level:x[0],code:x[1],name:x[2]});});S.subjectsVer=2;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
   S.papers=Array.isArray(S.papers)?S.papers:[];
   var L=S.look=S.look||{};L.theme=L.theme||'midnight';L.font=L.font||'ED Inter';L.num=L.num||'same';L.layout=L.layout||'panels';
-  ['secs','date','rules','level','centreNo','logoBg'].forEach(function(k){if(L[k]==null)L[k]=k!=='logoBg';});if(S.showRules===false){L.rules=false;}delete S.showRules;
+  ['secs','date','rules','level','centreNo'].forEach(function(k){if(L[k]==null)L[k]=true;});if(!L.logoBox)L.logoBox='auto';delete L.logoBg;if(S.showRules===false){L.rules=false;}delete S.showRules;
   L.custom=L.custom||{bg:'#0b2545',acc:'#f2c14e',fg:'#ffffff'};}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Could not save: the pictures may be too large');}}
 function $(s,r){return (r||document).querySelector(s);}
@@ -302,7 +306,11 @@ function showBoard(){view='board';$('#setup').hidden=true;$('#board').hidden=fal
   try{var el=document.documentElement;if(!window.ITExam&&el.requestFullscreen&&!document.fullscreenElement)el.requestFullscreen().catch(function(){});}catch(e){}
   drawBoard($('#board'),todays(),innerWidth,innerHeight);}
 function showSetup(t){view='setup';if(t)tab=t;$('#board').hidden=true;$('#bmenu').hidden=true;$('#setup').hidden=false;document.body.style.background='#eef2f8';drawSetup();}
-function logoImg(k,L){return S[k]?'<img class="blogo'+(L.logoBg?' pad':'')+'" src="'+esc(S[k])+'" alt="'+(k==='cam'?'Cambridge logo':'School logo')+'">':'';}
+function logoSrc(v){return v&&v.indexOf('builtin:')===0?((window.ED_LOGOS||{})[v.slice(8)]||''):(v||'');}
+function logoBoxOn(){var L=S.look;return L.logoBox==='on'||(L.logoBox==='auto'&&themeVars(L.theme)._dark);}
+/* side: in the narrow side column a wide Cambridge logo is swapped for the stacked one */
+function logoImg(k,L,side){var v=S[k];if(side&&v==='builtin:camWide')v='builtin:camStack';var src=logoSrc(v);if(!src)return '';
+  var wide=v==='builtin:camWide';return '<img class="blogo'+(logoBoxOn()?' pad':'')+(wide?' wide':'')+'" src="'+esc(src)+'" alt="'+(k==='cam'?'Cambridge logo':'School logo')+'">';}
 function subLine(L){return [L.centreNo&&S.centre?'Centre number <b>'+esc(S.centre)+'</b>':'',esc(S.room)].filter(Boolean).join(' · ');}
 function headHtml(L){return '<div class="bhead">'+logoImg('logo',L)+'<div class="bschool"><h1>'+esc(S.school||'Examinations')+'</h1><p>'+subLine(L)+'</p></div>'+logoImg('cam',L)+
     '<div class="bclock"><div class="t num" data-r="clock">--:--</div>'+(L.date?'<div class="d" data-r="date"></div>':'')+'</div></div>';}
@@ -323,12 +331,17 @@ function drawBoard(el,ps,w,h){var L=S.look,n=ps.length;el.sample=el.id==='board'
     else{cols=n<=1?1:n===2?2:n===3?3:n===4?2:3;wide=n===1||n===4;k=n<=1?1.1:n===2?.95:n===3?.75:n===4?.7:.55;}
     rows=Math.ceil(n/cols);
     body='<div class="bpapers L-'+(lay==='count'?'count':lay==='plain'?'plain':'panels')+(wide?' wide':'')+'" style="--k:'+k+';grid-template-columns:repeat('+cols+',minmax(0,1fr));grid-template-rows:repeat('+rows+',minmax(0,1fr))">'+ps.map(function(p){return paperHtml(p,L);}).join('')+'</div>';}
-  el.innerHTML=(side?'':headHtml(L))+'<div class="bmain">'+(side?'<aside class="bside"><div class="logos">'+logoImg('logo',L)+logoImg('cam',L)+'</div><h1>'+esc(S.school||'Examinations')+'</h1><p>'+subLine(L)+'</p><div class="t num" data-r="clock">--:--</div>'+(L.date?'<div class="d" data-r="date"></div>':'')+'</aside>':'')+body+'</div>'+
+  el.innerHTML=(side?'':headHtml(L))+'<div class="bmain">'+(side?'<aside class="bside"><div class="logos">'+logoImg('logo',L,true)+logoImg('cam',L,true)+'</div><h1>'+esc(S.school||'Examinations')+'</h1><p>'+subLine(L)+'</p><div class="t num" data-r="clock">--:--</div>'+(L.date?'<div class="d" data-r="date"></div>':'')+'</aside>':'')+body+'</div>'+
     (rules.length?'<div class="brules">'+WARN+'<ul>'+rules.map(function(r){return '<li>'+esc(r)+'</li>';}).join('')+'</ul></div>':'');
   fit(el);tickEl(el,new Date());
   $$('img',el).forEach(function(im){if(!im.complete)im.onload=function(){fit(el);tickEl(el,new Date());};});}
 /* make every paper fit its space, measured with the longest possible timer text */
-function fit(el){var box=$('.bpapers',el);if(!box)return;var k=parseFloat(box.style.getPropertyValue('--k'))||1;
+function fit(el){var box=$('.bpapers',el);if(!box)return;
+  if((box.classList.contains('L-panels')||box.classList.contains('L-plain'))&&$$('.paper',box).length){var k0=parseFloat(box.style.getPropertyValue('--k'))||1,res=[];
+    [true,false].forEach(function(w){box.classList.toggle('wide',w);box.style.setProperty('--k',k0);fit1(box);res.push([w,parseFloat(box.style.getPropertyValue('--k'))]);});
+    var best=res[0][1]>=res[1][1]*1.02?res[0]:res[1];box.classList.toggle('wide',best[0]);box.style.setProperty('--k',k0);fit1(box);return;}
+  fit1(box);}
+function fit1(box){var k=parseFloat(box.style.getPropertyValue('--k'))||1;
   $$('[data-r=left]',box).forEach(function(e){e.textContent='8:88:88';});$$('[data-r=tag]',box).forEach(function(e){e.textContent='Set start time';});$$('[data-r=lab]',box).forEach(function(e){e.textContent='Stop writing';});
   var wide=box.classList.contains('wide');
   var over=function(){var tb=$('.ttab',box);if(tb)return tb.scrollHeight>tb.clientHeight+1||$$('.trow',tb).some(function(r){return r.scrollWidth>r.clientWidth+1||$$('.c1 b,.c1 small,.tl,.v',r).some(function(c){return c.scrollWidth>c.clientWidth+1;});});
@@ -371,7 +384,8 @@ function drawTab(){var h='',pg=$('#spage');
       (L.theme==='school'?'<div class="colors"><label>Background<input type="color" data-c="bg" value="'+esc(L.custom.bg)+'"></label><label>Highlight<input type="color" data-c="acc" value="'+esc(L.custom.acc)+'"></label><label>Text<input type="color" data-c="fg" value="'+esc(L.custom.fg)+'"></label></div>':'')+'</section>'+
      '<section class="card"><h2>Font</h2><div class="choices">'+FONTS.map(function(f){return '<button class="choice" data-act="look" data-k="font" data-v="'+f[0]+'" aria-pressed="'+(L.font===f[0])+'"><div class="fontsample" style="font-family:\''+f[0]+'\'">Biology 0610<span>'+f[2]+' · '+f[1]+'</span></div></button>';}).join('')+'</div>'+
       '<h2 style="margin-top:16px">Numbers and clock</h2><div class="choices">'+NUMFONTS.map(function(f){return '<button class="choice" data-act="look" data-k="num" data-v="'+f[0]+'" aria-pressed="'+(L.num===f[0])+'"><div class="fontsample" style="font-family:'+(f[0]==='same'?'\''+L.font+'\'':'\'ED Mono\'')+'">09:45:30</div><small>'+f[1]+'</small></button>';}).join('')+'</div></section>'+
-     '<section class="card"><h2>Show on the board</h2><div class="toggles">'+[['secs','Seconds on the clock'],['date','Date'],['level','Level (IGCSE, AS & A Level)'],['centreNo','Centre number'],['rules','Rules notice'],['logoBg','White box behind logos']].map(function(t){return '<label><input type="checkbox" data-l="'+t[0]+'"'+(L[t[0]]?' checked':'')+'>'+t[1]+'</label>';}).join('')+'</div></section>';}
+     '<section class="card"><h2>White box behind logos</h2><div class="row">'+[['auto','Automatic (on dark designs)'],['on','Always'],['off','Never']].map(function(o){return '<button class="btn'+(L.logoBox===o[0]?' pri':'')+'" data-act="look" data-k="logoBox" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></section>'+
+     '<section class="card"><h2>Show on the board</h2><div class="toggles">'+[['secs','Seconds on the clock'],['date','Date'],['level','Level (IGCSE, AS & A Level)'],['centreNo','Centre number'],['rules','Rules notice']].map(function(t){return '<label><input type="checkbox" data-l="'+t[0]+'"'+(L[t[0]]?' checked':'')+'>'+t[1]+'</label>';}).join('')+'</div></section>';}
   else if(tab==='centre'){h='<section class="card"><h2>Centre</h2><div class="grid"><label class="f">School name<input class="in" data-f="school" value="'+esc(S.school)+'" placeholder="e.g. Lusaka Oaktree School"></label>'+
      '<label class="f">Cambridge centre number<input class="in" data-f="centre" value="'+esc(S.centre)+'" placeholder="e.g. ZM123"></label><label class="f">Room<input class="in" data-f="room" value="'+esc(S.room)+'" placeholder="e.g. Hall A"></label></div></section>'+
      '<section class="card"><h2>Logos</h2><div class="grid">'+logoBox('logo','School logo','Your school badge or crest')+logoBox('cam','Cambridge logo','The Cambridge logo your centre is allowed to use, for example from the Cambridge School Support Hub')+'</div>'+
@@ -382,8 +396,8 @@ function drawTab(){var h='',pg=$('#spage');
      '<div class="subjects"><table><thead><tr><th style="width:170px">Level</th><th style="width:120px">Code</th><th>Subject</th><th style="width:60px"></th></tr></thead><tbody id="subrows">'+subRows('')+'</tbody></table></div>'+
      '<p class="note">'+S.subjects.length+' subjects. Change any code or name here and it is used when you add papers. <button class="btn sm" data-act="resetsubs">Restore the Cambridge list</button></p></section>';}
   pg.innerHTML=h;if(tab==='look')drawPreview();}
-function logoBox(k,title,hint){return '<div class="f"><span>'+title+'</span><div class="logobox">'+(S[k]?'<img src="'+esc(S[k])+'" alt="'+title+'">':'<div class="ph">No picture</div>')+
-  '<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><label class="btn sm">Choose picture<input type="file" accept="image/*" data-logo="'+k+'" hidden></label>'+(S[k]?'<button class="btn sm danger" data-act="nologo" data-k="'+k+'">Remove</button>':'')+'<small class="note" style="font-weight:400">'+hint+'</small></div></div></div>';}
+function logoBox(k,title,hint){return '<div class="f"><span>'+title+'</span><div class="logobox">'+(S[k]?'<img src="'+esc(logoSrc(S[k]))+'" alt="'+title+'">':'<div class="ph">No picture</div>')+
+  '<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><div class="row">'+(k==='cam'?'<button class="btn sm" data-act="builtin" data-k="cam" data-v="camWide">Cambridge (wide)</button><button class="btn sm" data-act="builtin" data-k="cam" data-v="camStack">Cambridge (stacked)</button>':'<button class="btn sm" data-act="builtin" data-k="logo" data-v="school">Lusaka Oaktree School</button>')+'</div><label class="btn sm">Choose picture<input type="file" accept="image/*" data-logo="'+k+'" hidden></label>'+(S[k]?'<button class="btn sm danger" data-act="nologo" data-k="'+k+'">Remove</button>':'')+'<small class="note" style="font-weight:400">'+hint+'</small></div></div></div>';}
 function laySvg(k){var b='<rect width="160" height="90" rx="6" fill="#0d1b33"/>',p=function(x,y,w,h){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="4" fill="#1e3a6e"/>';},l=function(x,y,w){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="3" rx="1.5" fill="#9fb0cc"/>';},big=function(x,y,w){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="9" rx="2" fill="#93c5fd"/>';};
   var hd='<rect x="8" y="7" width="40" height="5" rx="2" fill="#fff"/><rect x="122" y="5" width="30" height="9" rx="2" fill="#fff"/>',ft='<rect x="8" y="80" width="144" height="5" rx="2" fill="#2b3f63"/>',s='';
   if(k==='panels')s=hd+p(8,20,70,56)+p(82,20,70,56)+l(13,30,30)+l(13,36,40)+l(13,42,34)+l(13,48,38)+big(13,62,40)+l(87,30,30)+l(87,36,40)+l(87,42,34)+l(87,48,38)+big(87,62,40)+ft;
@@ -439,6 +453,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-act]
   else if(a==='del'){var p=byId(id);if(p&&confirm('Remove '+p.name+' '+code(p)+'?')){S.papers=S.papers.filter(function(x){return x.id!==id;});save();drawTab();}}
   else if(a==='startnow'){var q=byId(id);if(q){q.start=hm(new Date());q.date=todayISO();save();drawTab();toast(q.name+' starts now: '+q.start);}}
   else if(a==='clearold'){S.papers=S.papers.filter(function(p){return p.date===todayISO();});save();drawTab();}
+  else if(a==='builtin'){S[b.dataset.k]='builtin:'+b.dataset.v;save();drawTab();}
   else if(a==='nologo'){S[b.dataset.k]='';save();drawTab();}
   else if(a==='rulesdef'){S.rules=RULES_DEF;save();drawTab();}
   else if(a==='addsub'){S.subjects.unshift({id:uid(),level:'IGCSE',code:'',name:'New subject'});save();$('#subrows').innerHTML=subRows('');var f=$('#subrows [data-s=name]');if(f){f.focus();f.select();}}
