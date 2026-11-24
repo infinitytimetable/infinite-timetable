@@ -1,0 +1,12 @@
+electron.zip: OK
+
+added 2 packages in 479ms
+icon and name set on build/Infinity Timetable/Infinity Timetable.exe
+total 204176
+-rw-r--r-- 1 runner runner 104537882 Nov 24 05:40 InfinityTimetable-2.5.0-Windows.zip
+-rw-r--r-- 1 runner runner 104537882 Nov 24 05:40 InfinityTimetable-Windows.zip
+wrote rsrc_windows_amd64.syso 145610 bytes, 12 resources
+total 209384
+-rw-r--r-- 1 runner runner 104537882 Nov 24 05:40 InfinityTimetable-2.5.0-Windows.zip
+-rwxr-xr-x 1 runner runner   5330432 Nov 24 05:40 InfinityTimetable-Setup-2.5.0.exe
+-rw-r--r-- 1 runner runner 104537882 Nov 24 05:40 InfinityTimetable-Windows.zip

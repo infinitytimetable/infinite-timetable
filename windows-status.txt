@@ -1,0 +1,8 @@
+status: success
+version: 2.5.0
+commit: d1ff5665c0d0fc01c7040c6e7c1c742e91f5ee22
+time: Tue Nov 24 05:40:24 UTC 2026
+file: total 209384
+file: -rw-r--r-- 1 runner runner 104537882 Nov 24 05:40 InfinityTimetable-2.5.0-Windows.zip
+file: -rwxr-xr-x 1 runner runner   5330432 Nov 24 05:40 InfinityTimetable-Setup-2.5.0.exe
+file: -rw-r--r-- 1 runner runner 104537882 Nov 24 05:40 InfinityTimetable-Windows.zip
