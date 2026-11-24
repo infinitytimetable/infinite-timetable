@@ -1,3 +1,4 @@
+2.5.0 - Glass 3D look in school colours, 3D week board, motion switch.
 Infinity Timetable for Android
 
 2.4.0 - phone layout: My day, one day at a time, tap a lesson to move it, quick cover with WhatsApp, sync with the school PC over Wi-Fi (scan its code), viewer mode.
