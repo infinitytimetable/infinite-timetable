@@ -24,12 +24,14 @@ button,input,select,textarea{font:inherit}
 .blogo.wide{max-width:calc(var(--u)*30);height:calc(var(--u)*5.6)}
 .bschool{flex:1;min-width:0}
 .bschool h1{margin:0;font-size:calc(var(--u)*2.6);line-height:1.12;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.bschool .btype{margin:calc(var(--u)*.3) 0 0;font-size:calc(var(--u)*2);font-weight:700;color:var(--acc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bside .btype{font-size:calc(var(--u)*2);font-weight:700;color:var(--acc);margin:0}
 .bschool p{margin:calc(var(--u)*.35) 0 0;font-size:calc(var(--u)*1.45);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bschool p b{color:var(--fg);font-weight:600}
 .bclock{text-align:right;flex:none}
 .bclock .t{font-weight:800;font-size:calc(var(--u)*6.2);line-height:1;letter-spacing:-.02em}
 .bclock .t small{font-size:.42em;color:var(--muted);margin-left:.12em;font-weight:600}
-.bclock .d{font-size:calc(var(--u)*1.4);color:var(--muted);margin-top:calc(var(--u)*.35)}
+.bclock .d{min-height:1.25em;font-size:calc(var(--u)*1.4);color:var(--muted);margin-top:calc(var(--u)*.35)}
 .bmain{flex:1;min-height:0;display:flex;gap:calc(var(--u)*1.2)}
 .bpapers{flex:1;min-width:0;min-height:0;display:flex;flex-wrap:wrap;align-content:flex-start;overflow:hidden}
 .bpapers>.paper{flex:none}
@@ -222,7 +224,7 @@ textarea.in{min-height:140px;resize:vertical;line-height:1.45}
 <script>
 'use strict';
 /* ===== Exam Display: shows the exam details on the classroom board ===== */
-var VERSION='1.5.1';
+var VERSION='1.6.0';
 /* ---------- Cambridge subjects and syllabus codes (editable in Settings > Subjects) ---------- */
 var CAMBRIDGE=[
  ['IGCSE','0452','Accounting'],['IGCSE','0606','Additional Mathematics'],['IGCSE','0400','Art and Design'],['IGCSE','0610','Biology'],['IGCSE','0450','Business Studies'],
@@ -264,6 +266,9 @@ var THEMES=[
 var FONTS=[['ED Inter','Modern','Inter'],['ED Poppins','Friendly','Poppins'],['ED Lora','Classic serif','Lora'],['ED Carlito','Office (like Calibri)','Carlito'],['ED Caladea','Formal serif (like Cambria)','Caladea'],['ED Liberation','Plain (like Arial)','Liberation Sans']];
 var NUMFONTS=[['same','Same as the text'],['ED Mono','Digital (fixed width)']];
 var LAYOUTS=[['panels','Panels','Each paper in its own card with all details and the time left'],['plain','Plain','No boxes or shading: clean lines and large text, like a printed notice'],['count','Big countdown','A very large timer for each paper, details underneath'],['table','Table','One row per paper; best for many papers in a hall'],['side','Clock at the side','Logos and a large clock on the left, papers on the right']];
+var EXAM_TYPES=['Summative Examination','Formative Assessment','Bi-weekly Test','Mock Examination','End of Term Examination','Cambridge Examination','Cambridge Checkpoint'];
+/* the type shown in the board header when every paper on the board has the same one; otherwise each paper shows its own */
+function commonType(ps){var t=ps.length?(ps[0].type||''):'';for(var i=1;i<ps.length;i++)if((ps[i].type||'')!==t)return null;return t;}
 var RULES_DEF='Switch off and hand in all mobile phones and smart watches\nNo talking once you enter the exam room\nWrite your centre number, candidate number and name on every page\nRaise your hand if you need help or more paper\nDo not leave the room without permission';
 var KEY='examdisplay.v1',S;
 /* Older Android boards: no CSS variables -> the board stylesheet is rebuilt with real values */
@@ -339,16 +344,17 @@ function logoBoxOn(){var L=S.look;return L.logoBox==='on'||(L.logoBox==='auto'&&
 function logoImg(k,L,side){var v=S[k];if(side&&v==='builtin:camWide')v='builtin:camStack';var src=logoSrc(v);if(!src)return '';
   var wide=v==='builtin:camWide';return '<img class="blogo'+(logoBoxOn()?' pad':'')+(wide?' wide':'')+'" src="'+esc(src)+'" alt="'+(k==='cam'?'Cambridge logo':'School logo')+'">';}
 function subLine(L){return [L.centreNo&&S.centre?'Centre number <b>'+esc(S.centre)+'</b>':'',esc(S.room)].filter(Boolean).join(' · ');}
-function headHtml(L){return '<div class="bhead">'+logoImg('logo',L)+'<div class="bschool"><h1>'+esc(S.school||'Examinations')+'</h1><p>'+subLine(L)+'</p></div>'+logoImg('cam',L)+
+function headHtml(L,ct){return '<div class="bhead">'+logoImg('logo',L)+'<div class="bschool"><h1>'+esc(S.school||'Examinations')+'</h1>'+(ct?'<div class="btype">'+esc(ct)+'</div>':'')+'<p>'+subLine(L)+'</p></div>'+logoImg('cam',L)+
     '<div class="bclock"><div class="t num" data-r="clock">--:--</div>'+(L.date?'<div class="d" data-r="date"></div>':'')+'</div></div>';}
 function detailsHtml(p,t,asDivs){var rows=[['Syllabus code',esc(p.code)],['Component (paper) code',esc(p.comp?code(p):'–')],['Duration',esc(p.dur)+' minutes'],['Start time',t?hm(t.st):'–'],['Finish time',t?hm(t.fin):'–'],['Five-minute warning',t?hm(t.warn):'–']];
   return '<dl>'+rows.map(function(r){return '<div class="dr"><dt>'+r[0]+'</dt><dd class="num">'+r[1]+'</dd></div>';}).join('')+'</dl>';}
 function paperHtml(p,L){var t=times(p),left='<div class="left"><span data-r="lab">Time left</span><b class="num" data-r="left">–</b></div>';
-  return '<section class="paper" data-id="'+p.id+'"><header><div class="ttl"><h2 class="subj">'+esc(p.name)+'</h2>'+(p.line?'<p class="pline">'+esc(p.line)+'</p>':'')+(L.level&&p.level?'<p class="lvl">'+esc(p.level)+'</p>':'')+'</div><span class="tag" data-r="tag"></span></header>'+
+  return '<section class="paper" data-id="'+p.id+'"><header><div class="ttl"><h2 class="subj">'+esc(p.name)+'</h2>'+(p.line?'<p class="pline">'+esc(p.line)+'</p>':'')+(function(){var x=[L.level?p.level:'',DRAWCT===null?p.type:''].filter(Boolean).join(' · ');return x?'<p class="lvl">'+esc(x)+'</p>':'';})()+'</div><span class="tag" data-r="tag"></span></header>'+
     '<div class="pbody">'+(L.layout==='count'?left+detailsHtml(p,t,true):detailsHtml(p,t,false)+left)+'</div><div class="bar"><i data-r="bar"></i></div></section>';}
 function tableHtml(ps,L){return '<div class="ttab"><div class="trow th"><span>Subject</span><span>Syllabus</span><span>Component</span><span>Duration</span><span>Start</span><span>Finish</span><span>5-min warning</span><span style="text-align:right">Time left</span></div>'+
-  ps.map(function(p){var t=times(p),sub=[p.line,L.level?p.level:''].filter(Boolean).join(' · ');return '<div class="trow paper-row" data-id="'+p.id+'"><div class="c1"><b>'+esc(p.name)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div><span class="v num">'+esc(p.code)+'</span><span class="v num">'+esc(p.comp?code(p):'–')+'</span><span class="v num">'+esc(p.dur)+' min</span><span class="v num">'+(t?hm(t.st):'–')+'</span><span class="v num">'+(t?hm(t.fin):'–')+'</span><span class="v num">'+(t?hm(t.warn):'–')+'</span><div class="tl num"><small data-r="lab">Time left</small><span data-r="left">–</span></div></div>';}).join('')+'</div>';}
-function drawBoard(el,ps,w,h){var L=S.look,n=ps.length;el.sample=el.id==='board'?null:ps;applyLook(el);sizeBoard(el,w,h);
+  ps.map(function(p){var t=times(p),sub=[p.line,L.level?p.level:'',DRAWCT===null?p.type:''].filter(Boolean).join(' · ');return '<div class="trow paper-row" data-id="'+p.id+'"><div class="c1"><b>'+esc(p.name)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div><span class="v num">'+esc(p.code)+'</span><span class="v num">'+esc(p.comp?code(p):'–')+'</span><span class="v num">'+esc(p.dur)+' min</span><span class="v num">'+(t?hm(t.st):'–')+'</span><span class="v num">'+(t?hm(t.fin):'–')+'</span><span class="v num">'+(t?hm(t.warn):'–')+'</span><div class="tl num"><small data-r="lab">Time left</small><span data-r="left">–</span></div></div>';}).join('')+'</div>';}
+var DRAWCT=null;
+function drawBoard(el,ps,w,h){var L=S.look,n=ps.length,ct=commonType(ps);DRAWCT=ct;el.sample=el.id==='board'?null:ps;applyLook(el);sizeBoard(el,w,h);
   var lay=L.layout,rules=L.rules?S.rules.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean):[],body,side=lay==='side';
   if(!n)body='<div class="bempty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>No papers set for today.<br>Open the menu in the corner and choose Papers.</div>';
   else if(lay==='table')body='<div class="bpapers" data-k="'+(n<=3?1:n<=5?.85:.7)+'" style="--k:'+(n<=3?1:n<=5?.85:.7)+';flex-wrap:nowrap">'+tableHtml(ps,L)+'</div>';
@@ -358,9 +364,9 @@ function drawBoard(el,ps,w,h){var L=S.look,n=ps.length;el.sample=el.id==='board'
     else{cols=n<=1?1:n===2?2:n===3?3:n===4?2:3;wide=n===1||n===4;k=n<=1?1.1:n===2?.95:n===3?.75:n===4?.7:.55;}
     rows=Math.ceil(n/cols);
     body='<div class="bpapers L-'+(lay==='count'?'count':lay==='plain'?'plain':'panels')+(wide?' wide':'')+'" data-cols="'+cols+'" data-rows="'+rows+'" data-k="'+k+'" style="--k:'+k+'">'+ps.map(function(p){return paperHtml(p,L);}).join('')+'</div>';}
-  el.innerHTML=(side?'':headHtml(L))+'<div class="bmain">'+(side?'<aside class="bside"><div class="logos">'+logoImg('logo',L,true)+logoImg('cam',L,true)+'</div><h1>'+esc(S.school||'Examinations')+'</h1><p>'+subLine(L)+'</p><div class="t num" data-r="clock">--:--</div>'+(L.date?'<div class="d" data-r="date"></div>':'')+'</aside>':'')+body+'</div>'+
+  el.innerHTML=(side?'':headHtml(L,ct))+'<div class="bmain">'+(side?'<aside class="bside"><div class="logos">'+logoImg('logo',L,true)+logoImg('cam',L,true)+'</div><h1>'+esc(S.school||'Examinations')+'</h1>'+(ct?'<p class="btype">'+esc(ct)+'</p>':'')+'<p>'+subLine(L)+'</p><div class="t num" data-r="clock">--:--</div>'+(L.date?'<div class="d" data-r="date"></div>':'')+'</aside>':'')+body+'</div>'+
     (rules.length?'<div class="brules">'+WARN+'<ul>'+rules.map(function(r){return '<li>'+esc(r)+'</li>';}).join('')+'</ul></div>':'');
-  compileCss(el);placePapers(el);fit(el);tickEl(el,nowD());
+  compileCss(el);tickEl(el,nowD());placePapers(el);fit(el);tickEl(el,nowD());
   $$('img',el).forEach(function(im){if(!im.complete)im.onload=function(){placePapers(el);fit(el);tickEl(el,nowD());};});}
 /* make every paper fit its space, measured with the longest possible timer text */
 function fit(el){var box=$('.bpapers',el);if(!box)return;
@@ -370,7 +376,7 @@ function fit(el){var box=$('.bpapers',el);if(!box)return;
   fit1(box);}
 /* size each paper box exactly (works on every browser, no CSS grid) */
 function placePapers(el){var box=$('.bpapers',el);if(!box||!box.dataset.cols)return;var cols=+box.dataset.cols,rows=+box.dataset.rows,u=el._u||10,g=Math.round(u*1.2),
-  W=Math.floor((box.clientWidth-(cols-1)*g)/cols),H=Math.floor((box.clientHeight-(rows-1)*g)/rows);
+  cs=getComputedStyle(box),bw=parseFloat(cs.width)||box.clientWidth,bh=parseFloat(cs.height)||box.clientHeight,W=Math.floor((bw-(cols-1)*g)/cols-.6),H=Math.floor((bh-(rows-1)*g)/rows-.6);
   $$('.paper',box).forEach(function(p,i){p.style.width=W+'px';p.style.height=H+'px';p.style.marginRight=(i%cols<cols-1?g:0)+'px';p.style.marginBottom=(Math.floor(i/cols)<rows-1?g:0)+'px';});}
 function fit1(box){var k=getK(box)||1;
   $$('[data-r=left]',box).forEach(function(e){e.textContent='8:88:88';});$$('[data-r=tag]',box).forEach(function(e){e.textContent='Set start time';});$$('[data-r=lab]',box).forEach(function(e){e.textContent='Stop writing';});
@@ -407,11 +413,11 @@ function drawSetup(){var tabs=[['papers','Papers'],['look','Design'],['centre','
 function drawTab(){var h='',pg=$('#spage');
   if(tab==='papers'){var ps=todays(),td=todayISO(),old=S.papers.filter(function(p){return p.date<td&&ps.indexOf(p)<0;}),soon=S.papers.filter(function(p){return p.date>td;}).sort(function(a,b){return (a.date+a.start).localeCompare(b.date+b.start);});
     h='<section class="card"><h2>Papers in this room today<span class="sp"></span><button class="btn pri" data-act="add">+ Add a paper</button></h2>'+
-     (ps.length?'<div class="plist">'+ps.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+' <small class="muted">'+esc(p.level||'')+'</small></b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(code(p))+' · '+esc(p.dur)+' min · '+(t?hm(t.st)+'–'+hm(t.fin)+' · 5-min warning '+hm(t.warn):'no start time')+'</span></div>'+statusPill(p)+
+     (ps.length?'<div class="plist">'+ps.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+' <small class="muted">'+esc([p.level,p.type].filter(Boolean).join(' · '))+'</small></b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(code(p))+' · '+esc(p.dur)+' min · '+(t?hm(t.st)+'–'+hm(t.fin)+' · 5-min warning '+hm(t.warn):'no start time')+'</span></div>'+statusPill(p)+
        '<button class="btn sm" data-act="startnow" data-id="'+p.id+'" title="Set the start time to this minute">Start now</button><button class="btn sm" data-act="dup" data-id="'+p.id+'" title="Copy, for example for extra time">Copy</button><button class="btn sm" data-act="edit" data-id="'+p.id+'">Edit</button><button class="btn sm danger" data-act="del" data-id="'+p.id+'">Remove</button></div>';}).join('')+'</div>'+
        '<p class="note">Papers show side by side on the board. For candidates with extra time, use Copy and change the duration.</p>':'<p class="muted">No papers yet. Add each paper being written in this room today.</p>')+
      (old.length?'<p class="note">'+old.length+' paper'+(old.length>1?'s':'')+' from earlier days are kept. <button class="btn sm" data-act="clearold">Remove them</button></p>':'')+'</section>'+
-     (soon.length?'<section class="card"><h2>Coming days</h2><div class="plist">'+soon.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+' <small class="muted">'+esc(p.level||'')+'</small></b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(new Date(p.date+'T00:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}))+' · '+esc(code(p))+' · '+esc(p.dur)+' min · '+(t?hm(t.st)+'–'+hm(t.fin):'no start time')+'</span></div><button class="btn sm" data-act="dup" data-id="'+p.id+'">Copy</button><button class="btn sm" data-act="edit" data-id="'+p.id+'">Edit</button><button class="btn sm danger" data-act="del" data-id="'+p.id+'">Remove</button></div>';}).join('')+'</div><p class="note">These show on the board automatically on their day.</p></section>':'');}
+     (soon.length?'<section class="card"><h2>Coming days</h2><div class="plist">'+soon.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+' <small class="muted">'+esc([p.level,p.type].filter(Boolean).join(' · '))+'</small></b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(new Date(p.date+'T00:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}))+' · '+esc(code(p))+' · '+esc(p.dur)+' min · '+(t?hm(t.st)+'–'+hm(t.fin):'no start time')+'</span></div><button class="btn sm" data-act="dup" data-id="'+p.id+'">Copy</button><button class="btn sm" data-act="edit" data-id="'+p.id+'">Edit</button><button class="btn sm danger" data-act="del" data-id="'+p.id+'">Remove</button></div>';}).join('')+'</div><p class="note">These show on the board automatically on their day.</p></section>':'');}
   else if(tab==='look'){var L=S.look;
     h='<section class="card"><h2>Preview<span class="sp"></span><span class="note">How the board will look. The real board is sharp at any size up to 4K.</span></h2><div class="preview" id="pv"></div></section>'+
      '<section class="card"><h2>Layout</h2><div class="choices">'+LAYOUTS.map(function(l){return '<button class="choice lay" data-act="look" data-k="layout" data-v="'+l[0]+'" aria-pressed="'+(L.layout===l[0])+'">'+laySvg(l[0])+'<b>'+l[1]+'</b><small>'+l[2]+'</small></button>';}).join('')+'</div></section>'+
@@ -448,14 +454,14 @@ function laySvg(k){var b='<rect width="160" height="90" rx="6" fill="#0d1b33"/>'
   else s=p(8,7,44,69)+'<circle cx="22" cy="20" r="5" fill="#fff"/><circle cx="38" cy="20" r="5" fill="#fff"/><rect x="14" y="44" width="32" height="10" rx="2" fill="#fff"/>'+p(56,7,96,32)+p(56,43,96,33)+l(62,14,40)+l(62,20,30)+big(112,20,34)+l(62,50,40)+l(62,56,30)+big(112,56,34)+ft;
   return '<svg viewBox="0 0 160 90">'+b+s+'</svg>';}
 function sample(){var d=todayISO(),now=nowD(),m=function(off){return hm(new Date(now.getTime()+off*60000));};
-  return [{id:'s1',date:d,name:'Biology',line:'Paper 4 – Theory (Extended)',level:'IGCSE',code:'0610',comp:'42',dur:75,start:m(-30)},{id:'s2',date:d,name:'Chemistry',line:'Paper 2 – AS Level Structured Questions',level:'AS & A Level',code:'9701',comp:'22',dur:75,start:m(-71)}];}
+  return [{id:'s1',date:d,type:'Summative Examination',name:'Biology',line:'Paper 4 – Theory (Extended)',level:'IGCSE',code:'0610',comp:'42',dur:75,start:m(-30)},{id:'s2',date:d,type:'Summative Examination',name:'Chemistry',line:'Paper 2 – AS Level Structured Questions',level:'AS & A Level',code:'9701',comp:'22',dur:75,start:m(-71)}];}
 function drawPreview(){var pv=$('#pv');if(!pv)return;var W=1920,H=1080,ps=todays();if(!ps.length)ps=sample();
   pv.innerHTML='<div class="bd"></div>';var el=$('.bd',pv);drawBoard(el,ps,W,H);el.style.transform='scale('+(pv.clientWidth/W)+')';}
 function subRows(q){q=(q||'').toLowerCase();return S.subjects.filter(function(s){return !q||(s.name+' '+s.code+' '+s.level).toLowerCase().indexOf(q)>=0;}).map(function(s){
   return '<tr data-id="'+s.id+'"><td><input class="in" data-s="level" value="'+esc(s.level)+'"></td><td><input class="in" data-s="code" value="'+esc(s.code)+'"></td><td><input class="in" data-s="name" value="'+esc(s.name)+'"></td><td><button class="btn sm danger" data-act="delsub" aria-label="Remove">✕</button></td></tr>';}).join('');}
 /* ---------- add / edit a paper ---------- */
 var ED=null;
-function openPaper(p,copy){ED=p?JSON.parse(JSON.stringify(p)):{id:uid(),date:todayISO(),level:'',code:'',name:'',line:'',comp:'',dur:90,start:''};if(copy){ED.id=uid();if(!/extra time/i.test(ED.line||''))ED.line=(ED.line?ED.line+' ':'')+'(extra time)';}
+function openPaper(p,copy){ED=p?JSON.parse(JSON.stringify(p)):{id:uid(),date:todayISO(),level:'',code:'',name:'',line:'',type:S.lastType||'',comp:'',dur:90,start:''};if(copy){ED.id=uid();if(!/extra time/i.test(ED.line||''))ED.line=(ED.line?ED.line+' ':'')+'(extra time)';}
   if(!p){var now=nowD();now.setMinutes(Math.ceil((now.getMinutes()+1)/5)*5,0,0);ED.start=hm(now);}
   var levels=[];S.subjects.forEach(function(s){if(levels.indexOf(s.level)<0)levels.push(s.level);});
   $('#dlg').innerHTML='<div class="box" role="dialog" aria-modal="true" aria-label="Paper"><h3>'+(copy?'Copy paper':p?'Edit paper':'Add a paper')+'</h3>'+
@@ -463,6 +469,7 @@ function openPaper(p,copy){ED=p?JSON.parse(JSON.stringify(p)):{id:uid(),date:tod
    '<label class="f">Subject<select class="in" data-e="subject"></select></label></div>'+
    '<div class="grid" style="margin-top:12px"><label class="f">Subject name on the board<input class="in" data-e="name" value="'+esc(ED.name)+'"></label><label class="f">Syllabus code<input class="in" data-e="code" value="'+esc(ED.code)+'" inputmode="numeric"></label>'+
    '<label class="f">Component (paper) code<input class="in" data-e="comp" value="'+esc(ED.comp)+'" placeholder="e.g. 42" inputmode="numeric"><div class="sugg" id="compchips"></div></label></div>'+
+   '<label class="f" style="margin-top:12px">Type of exam<input class="in" data-e="type" value="'+esc(ED.type||'')+'" placeholder="e.g. Summative Examination"><div class="sugg">'+EXAM_TYPES.map(function(c){return '<button type="button" data-act="etype" data-v="'+c+'">'+c+'</button>';}).join('')+'</div></label>'+
    '<label class="f" style="margin-top:12px">Paper line under the subject<input class="in" data-e="line" value="'+esc(ED.line)+'" placeholder="e.g. Paper 1 – Multiple Choice"><div class="sugg">'+['Paper 1','Paper 2','Paper 3','Paper 4','Paper 5','Paper 6','Multiple Choice (Core)','Multiple Choice (Extended)','Theory (Core)','Theory (Extended)','Practical Test','Alternative to Practical'].map(function(c){return '<button type="button" data-act="line" data-v="'+c+'">'+c+'</button>';}).join('')+'</div></label>'+
    '<div class="grid" style="margin-top:12px"><label class="f">Duration (minutes)<input class="in" type="number" min="5" max="600" step="5" data-e="dur" value="'+esc(ED.dur)+'"><div class="sugg">'+[45,60,75,90,105,120,135,150,180].map(function(m){return '<button type="button" data-act="dur" data-v="'+m+'">'+m+'</button>';}).join('')+'</div></label>'+
    '<label class="f">Start time<input class="in" type="time" data-e="start" value="'+esc(ED.start)+'"></label><label class="f">Date<input class="in" type="date" data-e="date" value="'+esc(ED.date)+'"></label></div>'+
@@ -477,7 +484,7 @@ function fillSubjects(){var lf=$('[data-e=levelf]').value,sel=$('[data-e=subject
   var cur=S.subjects.filter(function(s){return s.code===ED.code&&s.level===ED.level;})[0];
   sel.innerHTML='<option value="">Choose…</option>'+list.map(function(s){return '<option value="'+s.id+'"'+(cur&&cur.id===s.id?' selected':'')+'>'+esc(s.name+' ('+s.code+')'+(lf?'':' · '+s.level))+'</option>';}).join('');}
 function calc(){var t=times(ED);$('#calc').innerHTML=t?'<span>Finish <b>'+hm(t.fin)+'</b></span><span>Five-minute warning <b>'+hm(t.warn)+'</b></span><span>Shows as <b>'+esc(code(ED)||'–')+'</b></span>':'<span class="muted">Enter a start time and duration to work out the finish and warning times.</span>';}
-function readEd(){['name','code','comp','start','date','line'].forEach(function(k){var e=$('[data-e='+k+']');if(e)ED[k]=e.value.trim();});ED.dur=parseInt($('[data-e=dur]').value,10)||0;}
+function readEd(){['name','code','comp','start','date','line','type'].forEach(function(k){var e=$('[data-e='+k+']');if(e)ED[k]=e.value.trim();});ED.dur=parseInt($('[data-e=dur]').value,10)||0;}
 function autoLine(comp){var ln=$('[data-e=line]'),cur=ln.value.trim(),m=/^Paper \d/.exec(cur),nl=paperLine(comp);if(!nl)return;if(!cur)ln.value=nl;else if(m)ln.value=nl+cur.slice(m[0].length);}
 /* ---------- events ---------- */
 function byId(id){return S.papers.filter(function(p){return p.id===id;})[0];}
@@ -507,10 +514,11 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-act]
   else if(a==='comp'){$('[data-e=comp]').value=b.dataset.v;readEd();if(!applyComp())autoLine(b.dataset.v);readEd();calc();}
   else if(a==='line'){var li=$('[data-e=line]'),v=b.dataset.v,cur=li.value.trim(),pm=/^Paper \d/.exec(cur);
     if(/^Paper \d$/.test(v))li.value=pm?v+cur.slice(pm[0].length):(cur?v+' – '+cur:v);else li.value=pm?pm[0]+' – '+v:v;readEd();}
+  else if(a==='etype'){$('[data-e=type]').value=b.dataset.v;readEd();}
   else if(a==='dur'){$('[data-e=dur]').value=b.dataset.v;readEd();calc();}
   else if(a==='cancel'){$('#dlg').hidden=true;ED=null;}
   else if(a==='savepaper'){readEd();if(!ED.name||!ED.code){toast('Choose a subject, or type its name and syllabus code');return;}if(!(ED.dur>0)){toast('Enter the duration in minutes');return;}if(!/^\d{1,2}:\d{2}$/.test(ED.start)){toast('Enter the start time');return;}
-    var i2=S.papers.map(function(x){return x.id;}).indexOf(ED.id);if(i2>=0)S.papers[i2]=ED;else S.papers.push(ED);save();$('#dlg').hidden=true;ED=null;drawTab();}
+    S.lastType=ED.type||'';var i2=S.papers.map(function(x){return x.id;}).indexOf(ED.id);if(i2>=0)S.papers[i2]=ED;else S.papers.push(ED);save();$('#dlg').hidden=true;ED=null;drawTab();}
 });
 document.addEventListener('change',function(e){var t=e.target;
   if(t.dataset.logo&&t.files&&t.files[0]){var k=t.dataset.logo,r=new FileReader();r.onload=function(){shrink(r.result,function(u){S[k]=u;save();drawTab();});};r.readAsDataURL(t.files[0]);return;}
