@@ -214,7 +214,7 @@ textarea.in{min-height:140px;resize:vertical;line-height:1.45}
 <body>
 <div id="board" class="bd" hidden></div>
 <div id="bmenu" hidden><button class="fab" data-act="menu" aria-label="Menu" title="Menu"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-  <div class="items"><button data-act="setup" data-tab="papers">Papers</button><button data-act="setup" data-tab="look">Design</button><button data-act="cycle" data-what="theme">Next colours</button><button data-act="cycle" data-what="layout">Next layout</button><button data-act="setup" data-tab="centre">Settings</button></div></div>
+  <div class="items"><button data-act="setup" data-tab="papers">Papers</button><button data-act="setup" data-tab="look">Design</button><button data-act="cycle" data-what="theme">Next colours</button><button data-act="cycle" data-what="layout">Next layout</button><button data-act="setup" data-tab="centre">Settings</button><button data-act="fs" id="fsbtn">Full screen</button></div></div>
 <div id="setup"></div>
 <div id="dlg" hidden></div>
 <div id="toast" hidden></div>
@@ -222,7 +222,7 @@ textarea.in{min-height:140px;resize:vertical;line-height:1.45}
 <script>
 'use strict';
 /* ===== Exam Display: shows the exam details on the classroom board ===== */
-var VERSION='1.5.0';
+var VERSION='1.5.1';
 /* ---------- Cambridge subjects and syllabus codes (editable in Settings > Subjects) ---------- */
 var CAMBRIDGE=[
  ['IGCSE','0452','Accounting'],['IGCSE','0606','Additional Mathematics'],['IGCSE','0400','Art and Design'],['IGCSE','0610','Biology'],['IGCSE','0450','Business Studies'],
@@ -325,10 +325,14 @@ function applyLook(el){var v=themeVars(S.look.theme);el._vars={};Object.keys(v).
 var view='setup',tab='papers';
 var WARN='<svg viewBox="0 0 24 24"><path d="M12 2.5L1.5 21h21z" fill="#f59e0b"/><path d="M12 9v5.5M12 17.3v.2" stroke="#1a1000" stroke-width="2.2" stroke-linecap="round"/></svg>';
 function sizeBoard(el,w,h){var u=Math.min(w/100,h*1.7778/100);el._u=+u.toFixed(3);el.style.setProperty('--u',u.toFixed(3)+'px');if(el.id!=='board'){el.style.width=w+'px';el.style.height=h+'px';}}
-function showBoard(){view='board';$('#setup').hidden=true;$('#board').hidden=false;$('#bmenu').hidden=false;$('#bmenu').classList.remove('open');$('#dlg').hidden=true;
+/* browser version: full screen and keep the screen awake while the board shows (the Android app does this itself) */
+var WL=null;function wake(on){try{if(on&&!WL&&navigator.wakeLock&&!window.ITExam)navigator.wakeLock.request('screen').then(function(l){WL=l;l.addEventListener&&l.addEventListener('release',function(){WL=null;});}).catch(function(){});if(!on&&WL){WL.release();WL=null;}}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&view==='board')wake(true);});
+function fsToggle(){var d=document,el=d.documentElement;try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d);}else{(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}}catch(e){toast('Press F11 for full screen');}}
+function showBoard(){view='board';wake(true);var fb=$('#fsbtn');if(fb)fb.hidden=!!window.ITExam;$('#setup').hidden=true;$('#board').hidden=false;$('#bmenu').hidden=false;$('#bmenu').classList.remove('open');$('#dlg').hidden=true;
   try{var el=document.documentElement;if(!window.ITExam&&el.requestFullscreen&&!document.fullscreenElement)el.requestFullscreen().catch(function(){});}catch(e){}
   drawBoard($('#board'),todays(),innerWidth,innerHeight);}
-function showSetup(t){view='setup';if(t)tab=t;$('#board').hidden=true;$('#bmenu').hidden=true;$('#setup').hidden=false;document.body.style.background='#eef2f8';drawSetup();}
+function showSetup(t){view='setup';wake(false);if(t)tab=t;$('#board').hidden=true;$('#bmenu').hidden=true;$('#setup').hidden=false;document.body.style.background='#eef2f8';drawSetup();}
 function logoSrc(v){return v&&v.indexOf('builtin:')===0?((window.ED_LOGOS||{})[v.slice(8)]||''):(v||'');}
 function logoBoxOn(){var L=S.look;return L.logoBox==='on'||(L.logoBox==='auto'&&themeVars(L.theme)._dark);}
 /* side: in the narrow side column a wide Cambridge logo is swapped for the stacked one */
@@ -481,6 +485,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-act]
   if(a==='board')showBoard();
   else if(a==='setup')showSetup(b.dataset.tab);
   else if(a==='menu')$('#bmenu').classList.toggle('open');
+  else if(a==='fs'){fsToggle();$('#bmenu').classList.remove('open');}
   else if(a==='cycle'){var k=b.dataset.what,list=k==='theme'?THEMES.map(function(t){return t.id;}):LAYOUTS.map(function(l){return l[0];}),i=list.indexOf(S.look[k]);S.look[k]=list[(i+1)%list.length];save();drawBoard($('#board'),todays(),innerWidth,innerHeight);toast(k==='theme'?THEMES.filter(function(t){return t.id===S.look.theme;})[0].name:LAYOUTS.filter(function(l){return l[0]===S.look.layout;})[0][1]);}
   else if(a==='tab'){tab=b.dataset.tab;drawSetup();}
   else if(a==='look'){S.look[b.dataset.k]=b.dataset.v;save();var y=scrollY;drawTab();scrollTo(0,y);}
