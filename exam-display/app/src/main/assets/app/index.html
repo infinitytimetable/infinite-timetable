@@ -216,7 +216,7 @@ textarea.in{min-height:140px;resize:vertical;line-height:1.45}
 <body>
 <div id="board" class="bd" hidden></div>
 <div id="bmenu" hidden><button class="fab" data-act="menu" aria-label="Menu" title="Menu"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-  <div class="items"><button data-act="setup" data-tab="papers">Papers</button><button data-act="setup" data-tab="look">Design</button><button data-act="cycle" data-what="theme">Next colours</button><button data-act="cycle" data-what="layout">Next layout</button><button data-act="setup" data-tab="centre">Settings</button><button data-act="fs" id="fsbtn">Full screen</button></div></div>
+  <div class="items"><button data-act="pick">Papers today</button><button data-act="setup" data-tab="papers">Settings: papers</button><button data-act="setup" data-tab="look">Design</button><button data-act="cycle" data-what="theme">Next colours</button><button data-act="cycle" data-what="layout">Next layout</button><button data-act="setup" data-tab="centre">Settings</button><button data-act="fs" id="fsbtn">Full screen</button></div></div>
 <div id="setup"></div>
 <div id="dlg" hidden></div>
 <div id="toast" hidden></div>
@@ -224,7 +224,7 @@ textarea.in{min-height:140px;resize:vertical;line-height:1.45}
 <script>
 'use strict';
 /* ===== Exam Display: shows the exam details on the classroom board ===== */
-var VERSION='1.6.0';
+var VERSION='1.7.0';
 /* ---------- Cambridge subjects and syllabus codes (editable in Settings > Subjects) ---------- */
 var CAMBRIDGE=[
  ['IGCSE','0452','Accounting'],['IGCSE','0606','Additional Mathematics'],['IGCSE','0400','Art and Design'],['IGCSE','0610','Biology'],['IGCSE','0450','Business Studies'],
@@ -310,6 +310,17 @@ function status(p,now){var t=times(p);if(!t)return {k:'wait',t:null};if(now<t.st
 function dur(ms){ms=Math.max(0,Math.round(ms/1000));var h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return (h?h+':'+pad(m):m)+':'+pad(s);}
 function code(p){return p.code+(p.comp?'/'+p.comp:'');}
 function todays(){var d=todayISO(),now=nowD();return S.papers.filter(function(p){if(p.date===d)return true;var t=times(p);return !!t&&p.date<d&&t.fin.getTime()+30*60000>now;}).sort(function(a,b){return String(a.start).localeCompare(String(b.start));});}
+/* Which papers the board shows.
+   Automatic: a paper appears 15 minutes before it starts and stays until 10 minutes after it finishes; papers whose times overlap show side by side.
+   Manual: the invigilator picked papers with "View on board" (resets the next day). */
+var BEFORE=15*60000,AFTER=10*60000;
+function isManual(){return !!(S.view&&S.view.mode==='manual'&&S.view.date===todayISO());}
+function inWindow(p,now){var t=times(p);if(!t)return true;return now>=t.st.getTime()-BEFORE&&now<t.fin.getTime()+AFTER;}
+function boardPapers(){var ps=todays(),now=nowD().getTime();
+  if(isManual()){var ids=S.view.ids||[],sel=ps.filter(function(p){return ids.indexOf(p.id)>=0;});if(sel.length)return sel;}
+  return ps.filter(function(p){return inWindow(p,now);});}
+function nextPaper(){var now=nowD().getTime(),best=null;todays().forEach(function(p){var t=times(p);if(t&&t.st.getTime()-BEFORE>now&&(!best||t.st<times(best).st))best=p;});return best;}
+function setManual(ids){S.view=ids&&ids.length?{mode:'manual',date:todayISO(),ids:ids}:{mode:'auto'};save();}
 function paperLine(comp){var c=String(comp||''),m=/^0(\d)$/.exec(c)||/^(\d)/.exec(c);return m&&m[1]!=='0'?'Paper '+m[1]:'';}
 function compInfo(){if(!ED)return null;var t=COMPONENTS[ED.level+'|'+ED.code];return t&&t[ED.comp]||null;}
 /* ---------- colours ---------- */
@@ -336,7 +347,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 function fsToggle(){var d=document,el=d.documentElement;try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d);}else{(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}}catch(e){toast('Press F11 for full screen');}}
 function showBoard(){view='board';wake(true);var fb=$('#fsbtn');if(fb)fb.hidden=!!window.ITExam;$('#setup').hidden=true;$('#board').hidden=false;$('#bmenu').hidden=false;$('#bmenu').classList.remove('open');$('#dlg').hidden=true;
   try{var el=document.documentElement;if(!window.ITExam&&el.requestFullscreen&&!document.fullscreenElement)el.requestFullscreen().catch(function(){});}catch(e){}
-  drawBoard($('#board'),todays(),innerWidth,innerHeight);}
+  drawBoard($('#board'),boardPapers(),innerWidth,innerHeight);}
 function showSetup(t){view='setup';wake(false);if(t)tab=t;$('#board').hidden=true;$('#bmenu').hidden=true;$('#setup').hidden=false;document.body.style.background='#eef2f8';drawSetup();}
 function logoSrc(v){return v&&v.indexOf('builtin:')===0?((window.ED_LOGOS||{})[v.slice(8)]||''):(v||'');}
 function logoBoxOn(){var L=S.look;return L.logoBox==='on'||(L.logoBox==='auto'&&themeVars(L.theme)._dark);}
@@ -356,7 +367,11 @@ function tableHtml(ps,L){return '<div class="ttab"><div class="trow th"><span>Su
 var DRAWCT=null;
 function drawBoard(el,ps,w,h){var L=S.look,n=ps.length,ct=commonType(ps);DRAWCT=ct;el.sample=el.id==='board'?null:ps;applyLook(el);sizeBoard(el,w,h);
   var lay=L.layout,rules=L.rules?S.rules.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean):[],body,side=lay==='side';
-  if(!n)body='<div class="bempty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>No papers set for today.<br>Open the menu in the corner and choose Papers.</div>';
+  if(!n){var all=el.id==='board'?todays():[],nx=el.id==='board'?nextPaper():null,msg;
+    if(nx){var tn=times(nx);msg='<div style="font-size:1.25em">Next paper</div><div style="font-size:2.4em;font-weight:800;color:var(--fg)">'+esc(nx.name)+(nx.line?' <span style="color:var(--acc);font-weight:600">'+esc(nx.line)+'</span>':'')+'</div><div style="font-size:1.6em" class="num">starts at '+hm(tn.st)+'</div><div>It will appear here at '+hm(new Date(tn.st.getTime()-BEFORE))+'.</div>';}
+    else if(all.length)msg='All of today\'s papers in this room have finished.';
+    else msg='No papers set for today.<br>Open the menu in the corner and choose Papers.';
+    body='<div class="bempty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>'+msg+'</div>';}
   else if(lay==='table')body='<div class="bpapers" data-k="'+(n<=3?1:n<=5?.85:.7)+'" style="--k:'+(n<=3?1:n<=5?.85:.7)+';flex-wrap:nowrap">'+tableHtml(ps,L)+'</div>';
   else{var cols,rows,k,wide=false;
     if(lay==='count'){cols=n<=1?1:n<=4?2:3;k=n<=1?1.15:n===2?.8:.6;}
@@ -396,12 +411,12 @@ function tickEl(el,now){var L=S.look;$$('[data-r=clock]',el).forEach(function(c)
     e.className=(e.classList.contains('paper-row')?'trow paper-row':'paper')+' st-'+s.k;var tag=$('[data-r=tag]',e),lab=$('[data-r=lab]',e),left=$('[data-r=left]',e),bar=$('[data-r=bar]',e),T,Lb,V,W;
     if(!s.t){T='Set start time';Lb='Time left';V='–';W=0;}else if(s.k==='wait'){T='Not started';Lb='Starts in';V=dur(s.t.st-now);W=0;}else if(s.k==='end'){T='Time is up';Lb='Stop writing';V='0:00';W=100;}else{T=s.k==='warn'?'Five minutes':'In progress';Lb='Time left';V=dur(s.t.fin-now);W=100*(now-s.t.st)/(s.t.fin-s.t.st);}
     if(tag)tag.textContent=T;if(lab)lab.textContent=Lb;if(left)left.textContent=V;if(bar)bar.style.width=W.toFixed(2)+'%';});}
-function tick(){var now=nowD();if(view==='board'){var ps=todays(),ids=ps.map(function(p){return p.id;}).join();if(todayISO(now)!==tick.day||ids!==tick.ids){tick.day=todayISO(now);tick.ids=ids;drawBoard($('#board'),ps,innerWidth,innerHeight);}tickEl($('#board'),now);}
+function tick(){var now=nowD();if(view==='board'){var ps=boardPapers(),ids=ps.map(function(p){return p.id;}).join();if(todayISO(now)!==tick.day||ids!==tick.ids){tick.day=todayISO(now);tick.ids=ids;drawBoard($('#board'),ps,innerWidth,innerHeight);}tickEl($('#board'),now);}
   else if(tab==='look'){var pv=$('#pv .bd');if(pv)tickEl(pv,now);}
   var ck=$('#clknow');if(ck)ck.textContent=clockStr();}
 tick.day=todayISO();setInterval(tick,1000);
 setInterval(function(){var ae=document.activeElement;if(view==='setup'&&tab==='papers'&&$('#dlg').hidden&&!(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))){var y=scrollY;drawTab();scrollTo(0,y);}},30000);
-window.addEventListener('resize',function(){if(view==='board')drawBoard($('#board'),todays(),innerWidth,innerHeight);else if(tab==='look')drawPreview();});
+window.addEventListener('resize',function(){if(view==='board')drawBoard($('#board'),boardPapers(),innerWidth,innerHeight);else if(tab==='look')drawPreview();});
 /* ---------- settings ---------- */
 var IC={papers:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',look:'<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.3"/><circle cx="12" cy="7.5" r="1.3"/><circle cx="15.5" cy="10" r="1.3"/><path d="M12 21a3 3 0 010-6h1.5a2 2 0 002-2"/>',centre:'<path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/>',rules:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.1"/>',subjects:'<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19a2 2 0 012-2h13"/>'};
 function ico(k){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+IC[k]+'</svg>';}
@@ -412,9 +427,11 @@ function drawSetup(){var tabs=[['papers','Papers'],['look','Design'],['centre','
   drawTab();}
 function drawTab(){var h='',pg=$('#spage');
   if(tab==='papers'){var ps=todays(),td=todayISO(),old=S.papers.filter(function(p){return p.date<td&&ps.indexOf(p)<0;}),soon=S.papers.filter(function(p){return p.date>td;}).sort(function(a,b){return (a.date+a.start).localeCompare(b.date+b.start);});
+    var man=isManual(),onb=boardPapers().map(function(p){return p.id;});
     h='<section class="card"><h2>Papers in this room today<span class="sp"></span><button class="btn pri" data-act="add">+ Add a paper</button></h2>'+
-     (ps.length?'<div class="plist">'+ps.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+' <small class="muted">'+esc([p.level,p.type].filter(Boolean).join(' · '))+'</small></b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(code(p))+' · '+esc(p.dur)+' min · '+(t?hm(t.st)+'–'+hm(t.fin)+' · 5-min warning '+hm(t.warn):'no start time')+'</span></div>'+statusPill(p)+
-       '<button class="btn sm" data-act="startnow" data-id="'+p.id+'" title="Set the start time to this minute">Start now</button><button class="btn sm" data-act="dup" data-id="'+p.id+'" title="Copy, for example for extra time">Copy</button><button class="btn sm" data-act="edit" data-id="'+p.id+'">Edit</button><button class="btn sm danger" data-act="del" data-id="'+p.id+'">Remove</button></div>';}).join('')+'</div>'+
+     (ps.length?'<div class="calc" style="margin-bottom:12px;align-items:center">'+(man?'<span><b style="font-family:inherit">Board: chosen by hand</b> – showing '+esc(boardPapers().map(function(p){return p.name;}).join(', '))+'</span><button class="btn sm pri" data-act="vauto">Back to automatic</button>':'<span><b style="font-family:inherit">Board: automatic</b> – each paper shows from 15 minutes before it starts until 10 minutes after it finishes. Papers at the same time show side by side.</span>')+'</div>':'')+
+     (ps.length?'<div class="plist">'+ps.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+' <small class="muted">'+esc([p.level,p.type].filter(Boolean).join(' · '))+'</small></b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(code(p))+' · '+esc(p.dur)+' min · '+(t?hm(t.st)+'–'+hm(t.fin)+' · 5-min warning '+hm(t.warn):'no start time')+'</span></div>'+statusPill(p)+(onb.indexOf(p.id)>=0?'<span class="pill run">On board</span>':'')+
+       '<button class="btn sm pri" data-act="vone" data-id="'+p.id+'" title="Show only this paper on the board">View on board</button>'+(man?'<button class="btn sm" data-act="vtog" data-id="'+p.id+'">'+(onb.indexOf(p.id)>=0?'Take off board':'Add to board')+'</button>':'')+'<button class="btn sm" data-act="startnow" data-id="'+p.id+'" title="Set the start time to this minute">Start now</button><button class="btn sm" data-act="dup" data-id="'+p.id+'" title="Copy, for example for extra time">Copy</button><button class="btn sm" data-act="edit" data-id="'+p.id+'">Edit</button><button class="btn sm danger" data-act="del" data-id="'+p.id+'">Remove</button></div>';}).join('')+'</div>'+
        '<p class="note">Papers show side by side on the board. For candidates with extra time, use Copy and change the duration.</p>':'<p class="muted">No papers yet. Add each paper being written in this room today.</p>')+
      (old.length?'<p class="note">'+old.length+' paper'+(old.length>1?'s':'')+' from earlier days are kept. <button class="btn sm" data-act="clearold">Remove them</button></p>':'')+'</section>'+
      (soon.length?'<section class="card"><h2>Coming days</h2><div class="plist">'+soon.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+' <small class="muted">'+esc([p.level,p.type].filter(Boolean).join(' · '))+'</small></b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(new Date(p.date+'T00:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}))+' · '+esc(code(p))+' · '+esc(p.dur)+' min · '+(t?hm(t.st)+'–'+hm(t.fin):'no start time')+'</span></div><button class="btn sm" data-act="dup" data-id="'+p.id+'">Copy</button><button class="btn sm" data-act="edit" data-id="'+p.id+'">Edit</button><button class="btn sm danger" data-act="del" data-id="'+p.id+'">Remove</button></div>';}).join('')+'</div><p class="note">These show on the board automatically on their day.</p></section>':'');}
@@ -492,14 +509,21 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-act]
   if(a==='board')showBoard();
   else if(a==='setup')showSetup(b.dataset.tab);
   else if(a==='menu')$('#bmenu').classList.toggle('open');
+  else if(a==='vone'){setManual([id]);showBoard();}
+  else if(a==='vtog'){var cur=boardPapers().map(function(p){return p.id;}),j=cur.indexOf(id);if(j>=0)cur.splice(j,1);else cur.push(id);setManual(cur);var y3=scrollY;drawTab();scrollTo(0,y3);}
+  else if(a==='vauto'){setManual(null);if(view==='board'){$('#dlg').hidden=true;drawBoard($('#board'),boardPapers(),innerWidth,innerHeight);}else{var y4=scrollY;drawTab();scrollTo(0,y4);}toast('Board: automatic');}
+  else if(a==='pick'){$('#bmenu').classList.remove('open');var ps2=todays(),man2=isManual(),onb2=boardPapers().map(function(p){return p.id;});
+    $('#dlg').innerHTML='<div class="box" role="dialog" aria-modal="true" aria-label="Papers today"><h3>Which paper should the board show?</h3>'+(ps2.length?'<div class="plist">'+ps2.map(function(p){var t=times(p);return '<div class="pitem"><div class="pi"><b>'+esc(p.name)+'</b>'+(p.line?'<em>'+esc(p.line)+'</em>':'')+'<span>'+esc(code(p))+' · '+(t?hm(t.st)+'–'+hm(t.fin):'no start time')+'</span></div>'+statusPill(p)+(onb2.indexOf(p.id)>=0?'<span class="pill run">On board</span>':'')+'<button class="btn pri" data-act="vone" data-id="'+p.id+'">Show only this</button></div>';}).join('')+'</div>':'<p class="muted">No papers set for today.</p>')+
+      '<div class="row" style="justify-content:space-between;margin-top:16px">'+(ps2.length>1?'<button class="btn" data-act="vall">Show all of today\'s papers</button>':'<span></span>')+'<div class="row"><button class="btn" data-act="cancel">Close</button><button class="btn pri" data-act="vauto"'+(man2?'':' disabled')+'>Automatic (by time)</button></div></div></div>';$('#dlg').hidden=false;}
+  else if(a==='vall'){setManual(todays().map(function(p){return p.id;}));$('#dlg').hidden=true;drawBoard($('#board'),boardPapers(),innerWidth,innerHeight);}
   else if(a==='fs'){fsToggle();$('#bmenu').classList.remove('open');}
-  else if(a==='cycle'){var k=b.dataset.what,list=k==='theme'?THEMES.map(function(t){return t.id;}):LAYOUTS.map(function(l){return l[0];}),i=list.indexOf(S.look[k]);S.look[k]=list[(i+1)%list.length];save();drawBoard($('#board'),todays(),innerWidth,innerHeight);toast(k==='theme'?THEMES.filter(function(t){return t.id===S.look.theme;})[0].name:LAYOUTS.filter(function(l){return l[0]===S.look.layout;})[0][1]);}
+  else if(a==='cycle'){var k=b.dataset.what,list=k==='theme'?THEMES.map(function(t){return t.id;}):LAYOUTS.map(function(l){return l[0];}),i=list.indexOf(S.look[k]);S.look[k]=list[(i+1)%list.length];save();drawBoard($('#board'),boardPapers(),innerWidth,innerHeight);toast(k==='theme'?THEMES.filter(function(t){return t.id===S.look.theme;})[0].name:LAYOUTS.filter(function(l){return l[0]===S.look.layout;})[0][1]);}
   else if(a==='tab'){tab=b.dataset.tab;drawSetup();}
   else if(a==='look'){S.look[b.dataset.k]=b.dataset.v;save();var y=scrollY;drawTab();scrollTo(0,y);}
   else if(a==='add')openPaper(null);
   else if(a==='edit')openPaper(byId(id));
   else if(a==='dup')openPaper(byId(id),true);
-  else if(a==='del'){var p=byId(id);if(p&&confirm('Remove '+p.name+' '+code(p)+'?')){S.papers=S.papers.filter(function(x){return x.id!==id;});save();drawTab();}}
+  else if(a==='del'){var p=byId(id);if(p&&confirm('Remove '+p.name+' '+code(p)+'?')){S.papers=S.papers.filter(function(x){return x.id!==id;});if(S.view&&S.view.ids){S.view.ids=S.view.ids.filter(function(x){return x!==id;});}save();drawTab();}}
   else if(a==='startnow'){var q=byId(id);if(q){q.start=hm(nowD());q.date=todayISO();save();drawTab();toast(q.name+' starts now: '+q.start);}}
   else if(a==='clearold'){var keep=todays(),td=todayISO();S.papers=S.papers.filter(function(p){return p.date>=td||keep.indexOf(p)>=0;});save();drawTab();}
   else if(a==='clkadj'){S.clockOff=(+S.clockOff||0)+(+b.dataset.v)*1000;save();var y=scrollY;drawTab();scrollTo(0,y);}
@@ -539,7 +563,7 @@ function shrink(url,cb){var im=new Image();im.onload=function(){var m=900,s=Math
 window.ITBack=function(){if(!$('#dlg').hidden){$('#dlg').hidden=true;ED=null;return true;}if(view==='board'){if($('#bmenu').classList.contains('open')){$('#bmenu').classList.remove('open');return true;}showSetup();return true;}return false;};
 (function(){var f=document.createElement('div');f.style.cssText='display:flex;flex-direction:column;row-gap:1px;position:absolute;visibility:hidden';f.appendChild(document.createElement('div'));f.appendChild(document.createElement('div'));document.body.appendChild(f);var ok=f.scrollHeight===1;f.remove();if(!ok)document.documentElement.classList.add('nogap');})();
 function loadFonts(){if(!document.fonts||!document.fonts.load)return Promise.resolve();var l=[];FONTS.concat([['ED Mono']]).forEach(function(f){[400,600,800].forEach(function(w){l.push(document.fonts.load(w+' 40px "'+f[0]+'"').catch(function(){}));});});return Promise.all(l).then(function(){return document.fonts.ready;});}
-if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',function(){if(view==='board')drawBoard($('#board'),todays(),innerWidth,innerHeight);else if(tab==='look')drawPreview();});
+if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',function(){if(view==='board')drawBoard($('#board'),boardPapers(),innerWidth,innerHeight);else if(tab==='look')drawPreview();});
 load();
 var booted=false;function boot(){if(booted)return;booted=true;if(todays().length)showBoard();else showSetup();}
 loadFonts().then(boot,boot);setTimeout(boot,4000);
